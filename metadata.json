@@ -1,0 +1,8 @@
+{
+  "name": "VideoIQ | Real Estate Ad Auditor",
+  "description": "Professional creative review engine for Real Estate video ads, powered by the QC Checklist v2.0 and Weighted Scoring Schema v1.0.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
