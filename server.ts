@@ -11,13 +11,17 @@ const __dirname = path.dirname(__filename);
 
 const SESSION_SECRET = process.env.SESSION_SECRET || "videoiq-secret-session-key";
 
-async function startServer() {
-  const app = express();
-  const server = createServer(app);
-  const wss = new WebSocketServer({ noServer: true });
+export const app = express();
+let server: any = null;
+let wss: any = null;
 
-  const PORT = 3000;
+// Store recent activities in memory
+const activities: any[] = [];
 
+export function setupMiddleware() {
+  // Prevent duplicate middleware if called multiple times in serverless
+  if ((app as any)._middlewareSetup) return;
+  
   app.use(express.json());
   app.use(
     cookieSession({
@@ -28,6 +32,12 @@ async function startServer() {
       sameSite: "none",
     })
   );
+  (app as any)._middlewareSetup = true;
+}
+
+export function setupRoutes() {
+  // Prevent duplicate routes
+  if ((app as any)._routesSetup) return;
 
   // Auth Routes
   app.post("/api/auth/login", (req, res) => {
@@ -64,10 +74,14 @@ async function startServer() {
     res.json({ success: true });
   });
 
-  // Store recent activities in memory
-  const activities: any[] = [];
+  (app as any)._routesSetup = true;
+}
 
-  server.on('upgrade', (request, socket, head) => {
+export function setupWebSockets() {
+  if (!server) server = createServer(app);
+  if (!wss) wss = new WebSocketServer({ noServer: true });
+
+  server.on('upgrade', (request: any, socket: any, head: any) => {
     const url = new URL(request.url || '', `http://${request.headers.host}`);
     if (url.pathname === '/ws-api') {
       wss.handleUpgrade(request, socket, head, (ws) => {
@@ -112,6 +126,14 @@ async function startServer() {
       }
     });
   });
+}
+
+async function startServer() {
+  const PORT = 3000;
+
+  setupMiddleware();
+  setupRoutes();
+  setupWebSockets();
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -131,4 +153,9 @@ async function startServer() {
   });
 }
 
-startServer();
+// Only start the server if this file is run directly and NOT on Vercel
+if (process.env.NODE_ENV !== "production" || (!process.env.VERCEL && !process.env.NOW_REGION)) {
+  startServer();
+}
+
+export default app;
