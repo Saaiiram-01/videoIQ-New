@@ -134,7 +134,29 @@ const App: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [liveActivities, setLiveActivities] = useState<any[]>([]);
   const [wsStatus, setWsStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
+  const [hasApiKey, setHasApiKey] = useState<boolean>(true);
   const socketRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    const checkApiKey = async () => {
+      // @ts-ignore
+      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+        // @ts-ignore
+        const selected = await window.aistudio.hasSelectedApiKey();
+        setHasApiKey(selected);
+      }
+    };
+    checkApiKey();
+  }, []);
+
+  const openKeySelector = async () => {
+    // @ts-ignore
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      // @ts-ignore
+      await window.aistudio.openSelectKey();
+      setHasApiKey(true);
+    }
+  };
   
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [feedbackRating, setFeedbackRating] = useState(5);
@@ -287,6 +309,15 @@ const App: React.FC = () => {
 
   const runAnalysis = async () => {
     if (!mainFile || isAnalyzing) return;
+    
+    // Check if we need a key for Pro model
+    if (!hasApiKey && (globalThis as any).window?.aistudio) {
+      const confirmed = confirm("This audit requires a Pro API key. Would you like to select one now?");
+      if (confirmed) {
+        await openKeySelector();
+      }
+    }
+
     setIsAnalyzing(true);
     setLoadingText("Booting Quality Core...");
     try {
@@ -297,9 +328,23 @@ const App: React.FC = () => {
       await new Promise(r => mainVid.onloadedmetadata = r);
       setLoadingText("Decoding Frame Buffers...");
       const mainFrames = await captureFrames(mainVid, 20);
-      let result = await analyzeVideoFrames(mainFrames, selectedType);
-      result = recalculateAuditResult(result);
-      setAnalysisResult(result);
+      
+      let result: AnalysisResult;
+      try {
+        result = await analyzeVideoFrames(mainFrames, selectedType);
+      } catch (err: any) {
+        if (err.message?.includes("Requested entity was not found")) {
+          setHasApiKey(false);
+          alert("The selected API key does not have access to the Pro model. Please select a valid Pro key.");
+          await openKeySelector();
+          setIsAnalyzing(false);
+          return;
+        }
+        throw err;
+      }
+
+      const finalResult = recalculateAuditResult(result);
+      setAnalysisResult(finalResult);
       
       // Broadcast to team via WebSocket
       if (socketRef.current?.readyState === WebSocket.OPEN) {
@@ -404,7 +449,19 @@ const App: React.FC = () => {
       const marker = analysisResult.timestamped_betterment[markerIndex];
       const historyForAI = (marker.chat_history || []).map(m => ({ role: m.role, text: m.text }));
       
-      const aiResponse = await chatWithMarkerAI(marker.description, comment, historyForAI);
+      let aiResponse;
+      try {
+        aiResponse = await chatWithMarkerAI(marker.description, comment, historyForAI);
+      } catch (err: any) {
+        if (err.message?.includes("Requested entity was not found")) {
+          setHasApiKey(false);
+          alert("The selected API key does not have access to the Pro model. Please select a valid Pro key.");
+          await openKeySelector();
+          setIsChatting(prev => ({ ...prev, [markerIndex]: false }));
+          return;
+        }
+        throw err;
+      }
 
       const userMsg = { role: 'user' as const, text: comment, timestamp: new Date().toISOString() };
       const modelMsg = { role: 'model' as const, text: aiResponse.text, timestamp: new Date().toISOString() };
@@ -678,6 +735,14 @@ const App: React.FC = () => {
             </nav>
           </div>
           <div className="flex items-center gap-6 shrink-0">
+            {!hasApiKey && (
+              <button 
+                onClick={openKeySelector}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all animate-pulse"
+              >
+                <Zap size={14} /> Select Pro Key
+              </button>
+            )}
             <div className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all ${
               wsStatus === 'connected' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
               wsStatus === 'connecting' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' :
@@ -770,12 +835,12 @@ const App: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <MetricCard label="Hook Performance" score={analysisResult.hook_performance.score} maxScore={47} icon={<Scissors size={18} />} />
-                    <MetricCard label="Motion Graphics" score={analysisResult.motion_graphics.score} maxScore={68} icon={<Target size={18} />} />
-                    <MetricCard label="Visual & Technical" score={analysisResult.visual_technical.score} maxScore={52} icon={<ShieldAlert size={18} />} />
-                    <MetricCard label="Messaging & Copy" score={analysisResult.messaging_copy.score} maxScore={58} icon={<ShieldCheck size={18} />} />
-                    <MetricCard label="Audio & Captions" score={analysisResult.audio_captions.score} maxScore={38} icon={<Volume2 size={18} />} />
-                    <MetricCard label="Platform Policy" score={analysisResult.platform_policy.score} maxScore={57} icon={<Gauge size={18} />} />
+                    <MetricCard label="Hook Performance" score={analysisResult.hook_performance.score} maxScore={100} icon={<Scissors size={18} />} />
+                    <MetricCard label="Motion Graphics" score={analysisResult.motion_graphics.score} maxScore={100} icon={<Target size={18} />} />
+                    <MetricCard label="Visual & Technical" score={analysisResult.visual_technical.score} maxScore={100} icon={<ShieldAlert size={18} />} />
+                    <MetricCard label="Messaging & Copy" score={analysisResult.messaging_copy.score} maxScore={100} icon={<ShieldCheck size={18} />} />
+                    <MetricCard label="Audio & Captions" score={analysisResult.audio_captions.score} maxScore={100} icon={<Volume2 size={18} />} />
+                    <MetricCard label="Platform Policy" score={analysisResult.platform_policy.score} maxScore={100} icon={<Gauge size={18} />} />
                   </div>
 
                   <div className="bg-zinc-900/40 border border-white/5 p-8 rounded-3xl space-y-4 shadow-xl relative overflow-hidden">
