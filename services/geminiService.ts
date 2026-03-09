@@ -39,11 +39,33 @@ const localHeuristicAudit = async (mainFrames: FrameData[], type: VideoType, ref
   };
 };
 
+// Simple in-memory cache to ensure consistency for identical uploads
+const analysisCache = new Map<string, AnalysisResult>();
+
+const generateHash = (frames: FrameData[]): string => {
+  // Create a simple hash based on frame data and timestamps
+  const str = frames.map(f => f.timestamp + f.data.substring(0, 100)).join('|');
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash.toString();
+};
+
 export const analyzeVideoFrames = async (
   mainFrames: FrameData[],
   videoType: VideoType,
   refFrames?: FrameData[]
  ): Promise<AnalysisResult> => {
+  // Check cache first
+  const inputHash = generateHash(mainFrames) + (refFrames ? generateHash(refFrames) : '');
+  if (analysisCache.has(inputHash)) {
+    console.log("[CACHE HIT] Returning consistent result for identical file.");
+    return analysisCache.get(inputHash)!;
+  }
+
   const mainParts = mainFrames.flatMap((frame) => {
     const timestampStr = formatTimestamp(frame.timestamp);
     return [
@@ -67,14 +89,19 @@ export const analyzeVideoFrames = async (
   const prompt = `You are a world-class Creative Director and Lead Video Auditor at a top-tier global ad agency. 
     Your mission: Provide a brutal, high-level creative audit of this Real Estate video ad based on the "Real Estate Video Ad — Quality Control Checklist v2.0" and the "Scoring Schema v1.0".
 
-    SCORING WEIGHTS:
-    - Critical: 10 points
-    - High: 5 points
-    - Medium: 2 points
-    - Low: 1 point
+    SCORING WEIGHTS (Deductions from 100):
+    - Critical Failure: -10 points
+    - High Severity: -5 points
+    - Medium Severity: -2 points
+    - Low Severity: -1 point
+
+    STRICT SCORING RULE:
+    The "overall_score" MUST be exactly 100 minus the sum of all deductions from the "timestamped_betterment" list. 
+    Example: If you identify 2 High (-10) and 1 Medium (-2) issues, the "overall_score" MUST be 88.
+    If you identify NO issues, the "overall_score" MUST be 100.
 
     VERDICT PRIORITY LOGIC:
-    1. If ANY critical item is failed → verdict is FAIL regardless of score.
+    1. If ANY critical item is failed (Critical Severity) → verdict is FAIL regardless of score.
     2. If score >= 85 AND critical_failures == 0 AND high_failures <= 3 → PASS.
     3. If score >= 65 AND critical_failures == 0 → NEEDS_REVIEW.
     4. If score < 65 → FAIL.
@@ -95,7 +122,14 @@ export const analyzeVideoFrames = async (
     Persona Guidelines:
     - Be critical but constructive. 
     - Use "Director's Notes" style for actionable fixes.
-    - If a video is mediocre, do not give it a high score. Be the gatekeeper of quality.
+    - **STRICT RESTRICTION**: This is a **Post-Production Technical Audit**. DO NOT suggest changes to the script, content, storyboard, or the core creative idea.
+    - **NO CONTENT CHANGES**: Do not suggest changing what is being said or shown (e.g., "show a different room", "change the price", "rewrite the headline").
+    - **FOCUS ONLY ON EXECUTION**: Audit only the *execution* of the existing content:
+        - **Visuals**: Color, lighting, resolution, framing.
+        - **Motion**: Easing, timing, typography animations, transitions.
+        - **Technical**: Safe zones, aspect ratio, audio levels, captions accuracy.
+        - **Messaging Presentation**: Legibility, hierarchy, and visibility of the *existing* copy.
+    - If a video is mediocre in its execution, do not give it a high score. Be the gatekeeper of quality.
 
     OUTPUT: Strictly valid JSON according to schema. You MUST calculate the weighted scores and determine the verdict based on the logic above.
     Set "resubmission_required" to true if verdict is FAIL or NEEDS_REVIEW.`;
@@ -107,7 +141,8 @@ export const analyzeVideoFrames = async (
       contents: { parts: [...mainParts, ...refParts, { text: prompt }] },
       config: {
         responseMimeType: "application/json",
-        temperature: 0.1,
+        temperature: 0, // Set to 0 for maximum determinism
+        seed: 42, // Fixed seed for consistent results
         thinkingConfig: { thinkingBudget: 24000 },
         responseSchema: {
           type: Type.OBJECT,
@@ -162,7 +197,20 @@ export const analyzeVideoFrames = async (
             recommended_actions: { type: Type.ARRAY, items: { type: Type.STRING } },
             key_insights: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { topic: { type: Type.STRING }, summary: { type: Type.STRING }, significance: { type: Type.STRING } } } },
             final_verdict: { type: Type.STRING, enum: ['APPROVED', 'MINOR FIX REQUIRED', 'REJECTED'] },
-            timestamped_betterment: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { timestamp: { type: Type.STRING }, description: { type: Type.STRING }, actionable_fix: { type: Type.STRING }, severity: { type: Type.STRING, enum: ['Low', 'Medium', 'High', 'Critical'] }, item_id: { type: Type.STRING } } } }
+            timestamped_betterment: { 
+              type: Type.ARRAY, 
+              items: { 
+                type: Type.OBJECT, 
+                properties: { 
+                  timestamp: { type: Type.STRING }, 
+                  description: { type: Type.STRING }, 
+                  actionable_fix: { type: Type.STRING }, 
+                  severity: { type: Type.STRING, enum: ['Low', 'Medium', 'High', 'Critical'] }, 
+                  item_id: { type: Type.STRING },
+                  section_id: { type: Type.STRING, description: "One of: S01, S02, S03, S04, S05, S06" }
+                } 
+              } 
+            } 
           },
           required: ["overall_summary", "overall_score", "verdict", "verdict_message", "points_earned", "points_possible", "critical_failures", "high_failures", "section_scores", "final_verdict", "timestamped_betterment", "resubmission_required"]
         }
@@ -170,7 +218,12 @@ export const analyzeVideoFrames = async (
     });
 
     const rawResult = JSON.parse(response.text || '{}');
-    return { ...rawResult, videoType, overallScore: rawResult.overall_score };
+    const result = { ...rawResult, videoType, overallScore: rawResult.overall_score };
+    
+    // Store in cache
+    analysisCache.set(inputHash, result);
+    
+    return result;
   } catch (error: any) {
     return await localHeuristicAudit(mainFrames, videoType, refFrames);
   }
@@ -195,19 +248,24 @@ export const chatWithMarkerAI = async (
         systemInstruction: `You are a world-class Creative Director and Lead Video Auditor. 
         You are discussing a specific audit marker: "${markerDescription}".
         
-        The user (designer/editor) is explaining their creative choices or confirming a fix.
-        Your job is to be the final judge. If the user provides a compelling creative justification or confirms they have addressed the issue in a way that satisfies your high standards, you can decide to "Resolve" the marker.
+        The person you are talking to is a Professional Auditor. They have the final authority.
+        
+        Your Mission:
+        1. Be objective and unbiased. Do not be defensive about your initial AI assessment.
+        2. If the Auditor provides a professional judgment, creative justification, or confirms that a specific nuance makes the marker irrelevant, you MUST respect their decision.
+        3. If the Auditor explicitly wants to "ignore" or "dismiss" the marker based on their expertise, you should agree and set the action to "IGNORE".
+        4. You can also update the severity (Low, Medium, High, Critical) if the Auditor suggests the impact is different than initially assessed.
 
         Rules for Resolution:
-        1. Only set action to "IGNORE" if you are truly satisfied that the issue is no longer a concern.
-        2. If the user is just arguing without merit, stay firm.
-        3. You can also downgrade the severity if the user provides context that makes the issue less critical.
+        - Set action to "IGNORE" if the Auditor's judgment overrides the initial finding.
+        - Set action to "UPDATE_SEVERITY" if the impact level needs adjustment.
+        - Stay firm ONLY if the Auditor is asking for your technical opinion and you genuinely believe the error persists, but always yield to a direct "ignore" command from the Auditor.
 
         OUTPUT: You MUST return a JSON object with the following structure:
         {
-          "text": "Your professional response to the user, explaining why you are resolving it or why you are staying firm.",
+          "text": "Your professional response to the Auditor, acknowledging their judgment and confirming the action taken.",
           "action": "IGNORE" | "UPDATE_SEVERITY" | "NONE",
-          "newSeverity": "Low" | "Medium" | "High" (only if action is UPDATE_SEVERITY)
+          "newSeverity": "Low" | "Medium" | "High" | "Critical" (only if action is UPDATE_SEVERITY)
         }`,
         responseMimeType: "application/json"
       }

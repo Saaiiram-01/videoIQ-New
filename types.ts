@@ -88,15 +88,16 @@ export interface AnalysisResult {
   videoType: VideoType;
   overallScore: number; // Keep for backward compat
   isHeuristic?: boolean;
-  timestamped_betterment: Array<{
-    timestamp: string;
-    description: string;
-    actionable_fix: string;
-    severity: 'Low' | 'Medium' | 'High' | 'Critical';
-    chat_history?: ChatMessage[]; 
-    isIgnored?: boolean;
-    item_id?: string; // Link to checklist
-  }>;
+    timestamped_betterment: Array<{
+      timestamp: string;
+      description: string;
+      actionable_fix: string;
+      severity: 'Low' | 'Medium' | 'High' | 'Critical';
+      chat_history?: ChatMessage[]; 
+      isIgnored?: boolean;
+      item_id?: string; // Link to checklist
+      section_id?: string; // Link to section
+    }>;
 }
 
 export interface HistoryItem {

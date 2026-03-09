@@ -2,18 +2,146 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { 
   Upload, Trophy, Target, ShieldAlert, ShieldCheck, Palette, Activity,
-  UserCheck, History as HistoryIcon, Clock, RefreshCcw, Cpu, Zap, AlertCircle, Play, Home, PlayCircle, Layers, Scissors, Split, X, TrendingUp, Users, BarChart3, FileVideo, ChevronRight, Info, CheckCircle2, AlertTriangle, BookOpen, Sparkles, ChevronDown, Download, Share2, Gauge, MousePointer2, Scan, ChevronLeft, Trash2, DownloadCloud, UploadCloud, Database, Link as LinkIcon, MessageSquare, Send, Rss, MessageSquareText, Star, Plus, ExternalLink, Headphones, Volume2, Waves
+  UserCheck, History as HistoryIcon, Clock, RefreshCcw, Cpu, Zap, AlertCircle, Play, Home, PlayCircle, Layers, Scissors, Split, X, TrendingUp, Users, BarChart3, FileVideo, ChevronRight, Info, CheckCircle2, AlertTriangle, BookOpen, Sparkles, ChevronDown, Download, Share2, Gauge, MousePointer2, Scan, ChevronLeft, EyeOff, Trash2, DownloadCloud, UploadCloud, Database, Link as LinkIcon, MessageSquare, Send, Rss, MessageSquareText, Star, Plus, ExternalLink, Headphones, Volume2, Waves,
+  Lock, User, Key, LogOut
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { VideoType, AnalysisResult, FrameData, AgencyCategory, HistoryItem, FeedItem, UserFeedback } from './types';
 import { analyzeVideoFrames, chatWithMarkerAI } from './services/geminiService';
 
-const TEAM_MEMBERS = ["Akhil", "Siva Prasad", "Theja Sagar", "Sai Teja"];
+const TEAM_MEMBERS = ["Akhil", "Siva Prasad", "Theja Sagar", "Sai Teja", "Admin"];
 const MASTER_VAULT_KEY = 'videoiq_master_persistent_vault_v1';
 const FEED_VAULT_KEY = 'videoiq_feed_vault_v1';
 const FEEDBACK_VAULT_KEY = 'videoiq_feedback_vault_v1';
 const LEGACY_VAULT_KEYS = ['videoiq_session_vault_v3', 'videoiq_session_vault', 'videoiq_history_v2'];
+
+const Login: React.FC<{ onLoginSuccess: (user: any) => void }> = ({ onLoginSuccess }) => {
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedName, setSelectedName] = useState<string>(TEAM_MEMBERS[0]);
+  const [password, setPassword] = useState<string>('');
+
+  const handleTeamLogin = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: selectedName, password: selectedName === 'Admin' ? password : null }),
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Login failed');
+      }
+      
+      const data = await response.json();
+      if (data.user) {
+        onLoginSuccess(data.user);
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#FDBB00] blur-[120px] rounded-full opacity-20 animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-white blur-[120px] rounded-full opacity-10" />
+      </div>
+
+      <div className="max-w-md w-full relative z-10">
+        <div className="bg-[#0f0f0f] border border-white/10 rounded-3xl sm:rounded-[3rem] p-6 sm:p-12 shadow-2xl space-y-8 sm:space-y-10">
+          <div className="text-center space-y-4">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#FDBB00] to-[#FF8A00] rounded-2xl sm:rounded-3xl mx-auto flex items-center justify-center shadow-2xl transform -rotate-12 group hover:rotate-0 transition-transform duration-500">
+              <ShieldCheck size={40} className="text-black sm:size-12" strokeWidth={2.5} />
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase">Video<span className="text-[#FDBB00]">IQ</span></h1>
+            <p className="text-white/40 font-medium tracking-widest uppercase text-[8px] sm:text-[10px]">AI-Powered Creative Audit Engine</p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+              <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest"><span className="bg-[#0f0f0f] px-4 text-white/20">Select Your Auditor Profile</span></div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="relative group">
+                <select 
+                  value={selectedName}
+                  onChange={(e) => setSelectedName(e.target.value)}
+                  disabled={isLoading}
+                  className="w-full bg-white/5 text-white h-16 rounded-2xl font-black uppercase tracking-widest text-xs border border-white/10 px-6 appearance-none focus:outline-none focus:border-[#FDBB00] transition-all cursor-pointer"
+                >
+                  {TEAM_MEMBERS.map((name) => (
+                    <option key={name} value={name} className="bg-[#0f0f0f] text-white">
+                      {name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-white/20 group-hover:text-[#FDBB00] transition-colors">
+                  <ChevronDown size={20} />
+                </div>
+              </div>
+
+              {selectedName === 'Admin' && (
+                <div className="relative group animate-in slide-in-from-top-2 duration-300">
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#FDBB00] transition-colors">
+                    <Lock size={18} />
+                  </div>
+                  <input 
+                    type="password"
+                    placeholder="ADMIN ACCESS KEY"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                    className="w-full bg-white/5 text-white h-16 rounded-2xl font-black uppercase tracking-widest text-xs border border-white/10 pl-14 pr-6 focus:outline-none focus:border-[#FDBB00] transition-all"
+                  />
+                </div>
+              )}
+
+              <button 
+                onClick={handleTeamLogin}
+                disabled={isLoading}
+                className="w-full bg-white text-black h-16 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:bg-[#FDBB00] transition-all active:scale-95 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <RefreshCcw className="animate-spin" size={20} />
+                ) : (
+                  <>
+                    <User size={18} />
+                    Login to Portal
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-3">
+              <AlertCircle className="text-red-400 shrink-0" size={18} />
+              <div className="space-y-1">
+                <p className="text-[11px] font-black text-red-400 uppercase tracking-widest">Login Error</p>
+                <p className="text-[10px] text-red-400/60 leading-relaxed">{error}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="text-center">
+            <p className="text-[9px] text-white/20 font-medium uppercase tracking-[0.2em]">© 2026 VideoIQ Intelligence • Secure Audit Portal</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
   const radius = 65;
@@ -25,14 +153,75 @@ const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
   const color = score >= 85 ? '#22c55e' : score >= 70 ? '#fdbb00' : '#ef4444';
 
   return (
-    <div className="relative flex items-center justify-center w-44 h-44 drop-shadow-[0_0_20px_rgba(0,0,0,0.6)]">
-      <svg width={dimension} height={dimension} viewBox={`0 0 ${dimension} ${dimension}`} className="transform -rotate-90">
+    <div className="relative flex items-center justify-center w-32 h-32 sm:w-44 sm:h-44 drop-shadow-[0_0_20px_rgba(0,0,0,0.6)]">
+      <svg width="100%" height="100%" viewBox={`0 0 ${dimension} ${dimension}`} className="transform -rotate-90">
         <circle cx={center} cy={center} r={radius} stroke="rgba(255,255,255,0.03)" strokeWidth={strokeWidth} fill="transparent" />
         <circle cx={center} cy={center} r={radius} stroke={color} strokeWidth={strokeWidth} fill="transparent" strokeDasharray={circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 2s cubic-bezier(0.34, 1.56, 0.64, 1)' }} strokeLinecap="round" />
       </svg>
       <div className="absolute flex flex-col items-center justify-center text-center">
-        <span className="text-4xl font-black text-white leading-none">{score}%</span>
-        <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1">Quality</span>
+        <span className="text-2xl sm:text-4xl font-black text-white leading-none">{score}%</span>
+        <span className="text-[8px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1">Quality</span>
+      </div>
+    </div>
+  );
+};
+
+const LiveActivityFeed: React.FC<{ activities: any[] }> = ({ activities }) => {
+  return (
+    <div className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[3.5rem] p-6 sm:p-10 space-y-6 sm:space-y-8 shadow-2xl relative overflow-hidden group">
+      <div className="absolute top-0 right-0 p-6 sm:p-10 opacity-[0.03] rotate-12"><Rss className="size-16 sm:size-32" /></div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+        <div className="flex items-center gap-3 sm:gap-4 text-[#FDBB00]">
+          <div className="relative">
+            <div className="absolute inset-0 bg-[#FDBB00] rounded-full animate-ping opacity-20" />
+            <Activity size={24} className="sm:size-28 relative z-10" />
+          </div>
+          <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter italic">Live <span className="text-white">Team Activity</span></h3>
+        </div>
+        <span className="self-start sm:self-auto px-4 sm:px-6 py-1.5 sm:py-2 bg-white/5 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-white/30 border border-white/5">Real-time Sync</span>
+      </div>
+
+      <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2 sm:pr-4 relative z-10">
+        {activities.length === 0 ? (
+          <div className="py-12 sm:py-20 text-center space-y-4 opacity-20 italic">
+            <Users size={40} className="sm:size-48 mx-auto" strokeWidth={1} />
+            <p className="font-black uppercase tracking-[0.3em] text-xs sm:text-sm">Waiting for team activity...</p>
+          </div>
+        ) : (
+          activities.map((activity) => (
+            <div key={activity.id} className="bg-white/[0.02] border border-white/5 p-4 sm:p-6 rounded-2xl sm:rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.04] transition-all group/item shadow-lg">
+              <div className="flex items-center gap-4 sm:gap-6">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center border border-white/10 shadow-inner group-hover/item:scale-110 transition-transform">
+                  <UserCheck size={20} className="sm:size-24 text-[#FDBB00]" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-base sm:text-lg font-black text-white italic">{activity.user}</span>
+                    <span className="text-[8px] sm:text-[10px] font-black uppercase px-2 sm:px-3 py-0.5 sm:py-1 bg-white/5 rounded-lg text-white/30 tracking-widest">Auditor</span>
+                  </div>
+                  <p className="text-[11px] sm:text-[13px] font-medium text-white/40 italic flex items-center gap-2">
+                    <FileVideo size={12} className="sm:size-14" /> {activity.context}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between md:justify-end gap-6 sm:gap-8">
+                <div className="text-right space-y-1">
+                   <div className={`text-xl sm:text-2xl font-black italic ${activity.score >= 85 ? 'text-green-400' : activity.score >= 70 ? 'text-[#FDBB00]' : 'text-red-400'}`}>
+                     {activity.score}%
+                   </div>
+                   <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-white/20">Audit Score</div>
+                </div>
+                <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest border ${
+                  activity.verdict === 'PASS' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 
+                  activity.verdict === 'NEEDS_REVIEW' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
+                  'bg-red-500/10 border-red-500/20 text-red-400'
+                }`}>
+                  {activity.verdict === 'PASS' ? 'Approved' : activity.verdict === 'NEEDS_REVIEW' ? 'Needs Review' : 'Rejected'}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
@@ -44,15 +233,15 @@ const MetricCard: React.FC<{ label: string; score: number; maxScore: number; ico
   const isMid = percentage >= 60;
   
   return (
-    <div className="bg-[#111]/80 backdrop-blur-md border border-white/5 p-5 rounded-3xl hover:bg-white/[0.05] transition-all group border-t-white/10 shadow-lg">
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2.5 bg-white/5 rounded-xl text-white/40 group-hover:text-[#FDBB00] transition-colors">{icon}</div>
-        <span className={`text-[14px] font-black ${isHigh ? 'text-green-400' : isMid ? 'text-yellow-400' : 'text-red-400'}`}>
+    <div className="bg-[#111]/80 backdrop-blur-md border border-white/5 p-4 sm:p-5 rounded-2xl sm:rounded-3xl hover:bg-white/[0.05] transition-all group border-t-white/10 shadow-lg">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <div className="p-2 sm:p-2.5 bg-white/5 rounded-lg sm:rounded-xl text-white/40 group-hover:text-[#FDBB00] transition-colors">{React.cloneElement(icon as React.ReactElement, { size: 18 })}</div>
+        <span className={`text-[12px] sm:text-[14px] font-black ${isHigh ? 'text-green-400' : isMid ? 'text-yellow-400' : 'text-red-400'}`}>
           {score.toFixed(0)}/{maxScore}
         </span>
       </div>
-      <p className="text-[11px] font-black text-white/30 uppercase tracking-widest">{label}</p>
-      <div className="mt-3 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+      <p className="text-[9px] sm:text-[11px] font-black text-white/30 uppercase tracking-widest">{label}</p>
+      <div className="mt-2 sm:mt-3 h-1 sm:h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
         <div className={`h-full transition-all duration-1000 ${isHigh ? 'bg-green-500' : isMid ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${percentage}%` }} />
       </div>
     </div>
@@ -60,6 +249,8 @@ const MetricCard: React.FC<{ label: string; score: number; maxScore: number; ico
 };
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'audit' | 'archive' | 'team' | 'feed' | 'feedback' | 'guidelines'>('audit');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isChatting, setIsChatting] = useState<{ [key: number]: boolean }>({});
@@ -76,6 +267,9 @@ const App: React.FC = () => {
   const [commentInput, setCommentInput] = useState<{ [key: string]: string }>({});
   const [activeCommentMarker, setActiveCommentMarker] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [liveActivities, setLiveActivities] = useState<any[]>([]);
+  const [wsStatus, setWsStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
+  const socketRef = useRef<WebSocket | null>(null);
   
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [feedbackRating, setFeedbackRating] = useState(5);
@@ -85,6 +279,93 @@ const App: React.FC = () => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const importFileRef = useRef<HTMLInputElement>(null);
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.user) {
+        setUser(data.user);
+        setIsAuthenticated(true);
+      }
+    } catch (err) {
+      console.error('Auth check failed', err);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
+  useEffect(() => {
+    // WebSocket Setup with Reconnection Logic
+    let socket: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout;
+    let isMounted = true;
+
+    const connect = () => {
+      if (!isMounted) return;
+      
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socketUrl = `${protocol}//${window.location.host}/ws-api`;
+      socket = new WebSocket(socketUrl);
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        if (!isMounted) {
+          socket?.close();
+          return;
+        }
+        console.log("WS Connected to /ws-api");
+        setWsStatus('connected');
+      };
+
+      socket.onmessage = (event) => {
+        if (!isMounted) return;
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.type === 'INIT_ACTIVITIES') {
+            setLiveActivities(payload.data);
+          } else if (payload.type === 'ACTIVITY_UPDATE') {
+            setLiveActivities(prev => {
+              // Duplicate check by ID
+              if (prev.some(a => a.id === payload.data.id)) return prev;
+              return [payload.data, ...prev].slice(0, 50);
+            });
+          }
+        } catch (err) {
+          console.error("WS Message Error:", err);
+        }
+      };
+
+      socket.onclose = () => {
+        if (!isMounted) return;
+        console.log("WS Disconnected. Retrying in 3s...");
+        setWsStatus('disconnected');
+        reconnectTimeout = setTimeout(connect, 3000);
+      };
+
+      socket.onerror = (err) => {
+        console.error("WS Error:", err);
+        setWsStatus('disconnected');
+        socket?.close();
+      };
+    };
+
+    connect();
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(reconnectTimeout);
+      if (socket && socket.readyState === WebSocket.OPEN) socket.close();
+    };
+  }, []);
 
   useEffect(() => {
     const savedHistory = localStorage.getItem(MASTER_VAULT_KEY);
@@ -163,7 +444,7 @@ const App: React.FC = () => {
   }, []);
 
   const runAnalysis = async () => {
-    if (!mainFile) return;
+    if (!mainFile || isAnalyzing) return;
     setIsAnalyzing(true);
     setLoadingText("Booting Quality Core...");
     try {
@@ -175,19 +456,98 @@ const App: React.FC = () => {
       setLoadingText("Decoding Frame Buffers...");
       const mainFrames = await captureFrames(mainVid, 20);
       let result = await analyzeVideoFrames(mainFrames, selectedType);
+      result = recalculateAuditResult(result);
       setAnalysisResult(result);
+      
+      // Broadcast to team via WebSocket
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.send(JSON.stringify({
+          type: "NEW_ANALYSIS",
+          user: user?.name || selectedAuditor,
+          score: result.overallScore,
+          verdict: result.verdict,
+          context: mainFile.name
+        }));
+      }
+
       const auditId = Date.now().toString() + "_" + Math.random().toString(36).substr(2, 9);
       setActiveAuditId(auditId);
       setHistory(prev => [{
         id: auditId,
         date: new Date().toISOString(),
         fileName: mainFile.name,
-        auditorName: selectedAuditor,
+        auditorName: user?.name || selectedAuditor,
         result: result
       }, ...prev]);
     } catch (e) {
       alert("System Overload: Falling back to local precision engine.");
     } finally { setIsAnalyzing(false); }
+  };
+
+  const recalculateAuditResult = (result: AnalysisResult): AnalysisResult => {
+    const impactMap: Record<string, number> = { 'Critical': 10, 'High': 5, 'Medium': 2, 'Low': 1 };
+    
+    // 1. Reset counts
+    let totalDeduction = 0;
+    let criticalCount = 0;
+    let highCount = 0;
+    
+    // 2. Calculate deductions from active markers
+    result.timestamped_betterment.forEach(marker => {
+      if (!marker.isIgnored) {
+        const impact = impactMap[marker.severity] || 0;
+        totalDeduction += impact;
+        if (marker.severity === 'Critical') criticalCount++;
+        if (marker.severity === 'High') highCount++;
+      }
+    });
+    
+    // 3. Update overall scores
+    result.overall_score = Math.max(0, 100 - totalDeduction);
+    result.overallScore = result.overall_score;
+    result.points_earned = result.overall_score; // On 100pt scale
+    result.points_possible = 100;
+    result.critical_failures = criticalCount;
+    result.high_failures = highCount;
+    
+    // 4. Update section scores
+    const sections = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06'];
+    sections.forEach(sid => {
+      const sectionMarkers = result.timestamped_betterment.filter(m => m.section_id === sid && !m.isIgnored);
+      const sectionDeduction = sectionMarkers.reduce((acc, m) => acc + (impactMap[m.severity] || 0), 0);
+      
+      const section = result.section_scores.find(s => s.section_id === sid);
+      if (section) {
+        section.points_possible = 100; // Standardize to 100 for consistency
+        section.points_earned = Math.max(0, 100 - sectionDeduction);
+        section.score = section.points_earned;
+        
+        // Sync with top-level category objects
+        if (sid === 'S01') result.hook_performance.score = section.score;
+        else if (sid === 'S02') result.motion_graphics.score = section.score;
+        else if (sid === 'S03') result.visual_technical.score = section.score;
+        else if (sid === 'S04') result.messaging_copy.score = section.score;
+        else if (sid === 'S05') result.audio_captions.score = section.score;
+        else if (sid === 'S06') result.platform_policy.score = section.score;
+      }
+    });
+    
+    // 5. Update verdicts based on audit logic
+    if (result.overall_score >= 85 && result.critical_failures === 0 && result.high_failures <= 3) {
+      result.verdict = 'PASS';
+      result.final_verdict = 'APPROVED';
+      result.verdict_message = "Video meets all critical standards. Approved for publishing.";
+    } else if (result.overall_score >= 65 && result.critical_failures === 0) {
+      result.verdict = 'NEEDS_REVIEW';
+      result.final_verdict = 'MINOR FIX REQUIRED';
+      result.verdict_message = "Passes critical checks but has quality gaps. Fix flagged items before publishing.";
+    } else {
+      result.verdict = 'FAIL';
+      result.final_verdict = 'REJECTED';
+      result.verdict_message = "Critical issues found. All critical failures must be resolved before resubmission.";
+    }
+    
+    return result;
   };
 
   const addMarkerComment = async (markerIndex: number) => {
@@ -216,18 +576,13 @@ const App: React.FC = () => {
           
           if (aiResponse.action === 'IGNORE' && !updatedMarker.isIgnored) {
             updatedMarker.isIgnored = true;
-            const impact = updatedMarker.severity === 'High' ? 10 : updatedMarker.severity === 'Medium' ? 5 : 2;
-            newResult.overallScore = Math.min(100, newResult.overallScore + impact);
-            
-            if (newResult.overallScore >= 90) newResult.final_verdict = 'APPROVED';
-            else if (newResult.overallScore >= 75) newResult.final_verdict = 'MINOR FIX REQUIRED';
-            else newResult.final_verdict = 'REJECTED';
           } else if (aiResponse.action === 'UPDATE_SEVERITY' && aiResponse.newSeverity) {
             updatedMarker.severity = aiResponse.newSeverity;
           }
 
-          setAnalysisResult(newResult);
-          return { ...item, result: newResult };
+          const finalResult = recalculateAuditResult(newResult);
+          setAnalysisResult(finalResult);
+          return { ...item, result: finalResult };
         }
         return item;
       }));
@@ -246,22 +601,11 @@ const App: React.FC = () => {
         const newResult = JSON.parse(JSON.stringify(item.result)) as AnalysisResult;
         const marker = newResult.timestamped_betterment[markerIndex];
         
-        const impact = marker.severity === 'High' ? 10 : marker.severity === 'Medium' ? 5 : 2;
+        marker.isIgnored = !marker.isIgnored;
         
-        if (marker.isIgnored) {
-          marker.isIgnored = false;
-          newResult.overallScore = Math.max(0, newResult.overallScore - impact);
-        } else {
-          marker.isIgnored = true;
-          newResult.overallScore = Math.min(100, newResult.overallScore + impact);
-        }
-        
-        if (newResult.overallScore >= 90) newResult.final_verdict = 'APPROVED';
-        else if (newResult.overallScore >= 75) newResult.final_verdict = 'MINOR FIX REQUIRED';
-        else newResult.final_verdict = 'REJECTED';
-        
-        setAnalysisResult(newResult);
-        return { ...item, result: newResult };
+        const finalResult = recalculateAuditResult(newResult);
+        setAnalysisResult(finalResult);
+        return { ...item, result: finalResult };
       }
       return item;
     }));
@@ -471,32 +815,75 @@ const App: React.FC = () => {
     }
   };
 
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={(user) => {
+      setUser(user);
+      setIsAuthenticated(true);
+    }} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#FDBB00] selection:text-black antialiased">
-      <header className="sticky top-0 z-[60] bg-black/80 backdrop-blur-2xl border-b border-white/5 h-20 px-8 flex items-center shadow-2xl overflow-x-auto no-scrollbar">
-        <div className="max-w-[1700px] w-full mx-auto flex items-center justify-between gap-10">
-          <div className="flex items-center gap-8 shrink-0">
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => { setAnalysisResult(null); setActiveTab('audit'); }}>
-              <div className="w-11 h-11 bg-gradient-to-tr from-[#FDBB00] to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform"><Scan size={24} className="text-black" strokeWidth={3} /></div>
-              <h1 className="text-2xl font-black italic tracking-tighter uppercase">VIDEO<span className="text-[#FDBB00]">IQ</span></h1>
+      <header className="sticky top-0 z-[60] bg-black/80 backdrop-blur-2xl border-b border-white/5 h-16 sm:h-20 px-4 sm:px-8 flex items-center shadow-2xl overflow-x-auto no-scrollbar">
+        <div className="max-w-[1700px] w-full mx-auto flex items-center justify-between gap-4 sm:gap-10">
+          <div className="flex items-center gap-4 sm:gap-8 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group" onClick={() => { setAnalysisResult(null); setActiveTab('audit'); }}>
+              <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-tr from-[#FDBB00] to-orange-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform"><Scan size={18} className="text-black sm:size-24" strokeWidth={3} /></div>
+              <h1 className="text-lg sm:text-2xl font-black italic tracking-tighter uppercase">VIDEO<span className="text-[#FDBB00]">IQ</span></h1>
             </div>
-            <nav className="flex items-center gap-1 bg-[#0a0a0a] p-1.5 rounded-[2rem] border border-white/10 shadow-inner">
-              <button onClick={() => setActiveTab('audit')} className={`px-6 py-2.5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'audit' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Scan size={14} /> Audit</button>
-              <button onClick={() => setActiveTab('guidelines')} className={`px-6 py-2.5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'guidelines' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><BookOpen size={14} /> Guidelines</button>
-              <button onClick={() => setActiveTab('archive')} className={`px-6 py-2.5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'archive' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><HistoryIcon size={14} /> Archive</button>
-              <button onClick={() => setActiveTab('feed')} className={`px-6 py-2.5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'feed' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Rss size={14} /> Feed</button>
-              <button onClick={() => setActiveTab('team')} className={`px-6 py-2.5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'team' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Users size={14} /> Team</button>
-              <button onClick={() => setActiveTab('feedback')} className={`px-6 py-2.5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'feedback' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><MessageSquareText size={14} /> Feedback</button>
+            <nav className="flex items-center gap-1 bg-[#0a0a0a] p-1 rounded-[2rem] border border-white/10 shadow-inner overflow-x-auto no-scrollbar">
+              <button onClick={() => setActiveTab('audit')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'audit' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Scan size={12} /> Audit</button>
+              <button onClick={() => setActiveTab('guidelines')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'guidelines' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><BookOpen size={12} /> Guidelines</button>
+              <button onClick={() => setActiveTab('archive')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'archive' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><HistoryIcon size={12} /> Archive</button>
+              <button onClick={() => setActiveTab('feed')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'feed' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Rss size={12} /> Feed</button>
+              <button onClick={() => setActiveTab('team')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'team' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Users size={12} /> Team</button>
+              <button onClick={() => setActiveTab('feedback')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'feedback' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><MessageSquareText size={12} /> Feedback</button>
             </nav>
           </div>
-          <div className="flex items-center gap-6 shrink-0">
-            <div className="hidden lg:block text-right"><p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Active Auditor</p><p className="text-[13px] font-black text-white/80 tracking-tight">{selectedAuditor}</p></div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FDBB00]/10 to-orange-500/10 border border-[#FDBB00]/30 flex items-center justify-center text-[#FDBB00] shadow-glow"><UserCheck size={20} /></div>
+          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+            <div className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-all ${
+              wsStatus === 'connected' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+              wsStatus === 'connecting' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
+              'bg-red-500/10 border-red-500/20 text-red-400'
+            }`}>
+              <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
+                wsStatus === 'connected' ? 'bg-green-500 animate-pulse' :
+                wsStatus === 'connecting' ? 'bg-yellow-500 animate-bounce' :
+                'bg-red-500'
+              }`} />
+              <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
+                {wsStatus === 'connected' ? 'Live' : wsStatus === 'connecting' ? 'Wait' : 'Offline'}
+              </span>
+            </div>
+            <div className="hidden lg:block text-right">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Active Auditor</p>
+              <div className="flex items-center justify-end gap-2">
+                {user?.role === 'admin' && (
+                  <span className="px-2 py-0.5 bg-[#FDBB00] text-black text-[9px] font-black uppercase rounded-md tracking-tighter">Admin</span>
+                )}
+                <p className="text-[13px] font-black text-white/80 tracking-tight">{user?.name || selectedAuditor}</p>
+              </div>
+            </div>
+            <div className="relative group">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FDBB00]/10 to-orange-500/10 border border-[#FDBB00]/30 flex items-center justify-center text-[#FDBB00] shadow-glow overflow-hidden">
+                {user?.picture ? (
+                  <img src={user.picture} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                ) : (
+                  <UserCheck size={20} />
+                )}
+              </div>
+              <button 
+                onClick={handleLogout}
+                className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-lg flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+              >
+                <LogOut size={10} className="text-white" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1700px] mx-auto p-8">
+      <main className="max-w-[1700px] mx-auto p-4 sm:p-8">
         {activeTab === 'audit' && (
           isAnalyzing ? (
             <div className="py-44 flex flex-col items-center justify-center space-y-12 animate-in fade-in duration-700">
@@ -504,53 +891,53 @@ const App: React.FC = () => {
                <div className="text-center space-y-6"><h2 className="text-5xl font-black tracking-tighter italic uppercase">Initializing <span className="text-[#FDBB00]">Video Review Core</span></h2><p className="text-[14px] text-white/30 font-mono tracking-[0.6em] uppercase animate-pulse">{loadingText}</p></div>
             </div>
           ) : analysisResult ? (
-            <div className="space-y-10 animate-in fade-in duration-700">
-              <div className="bg-[#0f0f0f] border border-white/5 rounded-[4rem] p-12 flex flex-col xl:flex-row items-center justify-between gap-12 shadow-3xl border-t-white/10">
-                 <div className="flex flex-col md:flex-row items-center gap-16">
+            <div className="space-y-6 sm:space-y-10 animate-in fade-in duration-700">
+              <div className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[4rem] p-6 sm:p-12 flex flex-col xl:flex-row items-center justify-between gap-8 sm:gap-12 shadow-3xl border-t-white/10">
+                 <div className="flex flex-col md:flex-row items-center gap-8 sm:gap-16">
                     <ScoreRing score={analysisResult.overall_score} />
-                    <div className="space-y-6 text-center md:text-left">
-                      <div className="flex flex-wrap items-center gap-4 justify-center md:justify-start">
-                        <span className={`px-10 py-3.5 rounded-2xl text-[13px] font-black uppercase tracking-widest border-2 ${
+                    <div className="space-y-4 sm:space-y-6 text-center md:text-left">
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 justify-center md:justify-start">
+                        <span className={`px-6 sm:px-10 py-2 sm:py-3.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] font-black uppercase tracking-widest border-2 ${
                           analysisResult.verdict === 'PASS' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 
                           analysisResult.verdict === 'NEEDS_REVIEW' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
                           'bg-red-500/10 border-red-500/20 text-red-400'
                         }`}>{analysisResult.verdict === 'PASS' ? 'Approved' : analysisResult.verdict === 'NEEDS_REVIEW' ? 'Needs Review' : 'Rejected'}</span>
                         {analysisResult.resubmission_required && (
-                          <span className="px-6 py-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-[11px] font-black text-red-400 uppercase tracking-widest">Resubmission Required</span>
+                          <span className="px-4 sm:px-6 py-2 sm:py-3.5 rounded-xl sm:rounded-2xl bg-red-500/10 border border-red-500/20 text-[9px] sm:text-[11px] font-black text-red-400 uppercase tracking-widest">Resubmission Required</span>
                         )}
-                        <span className="px-6 py-3.5 rounded-2xl bg-white/5 border border-white/5 text-[11px] font-black text-white/40 uppercase tracking-widest">{selectedType}</span>
-                        <div className="flex items-center gap-4 ml-4">
+                        <span className="px-4 sm:px-6 py-2 sm:py-3.5 rounded-xl sm:rounded-2xl bg-white/5 border border-white/5 text-[9px] sm:text-[11px] font-black text-white/40 uppercase tracking-widest">{selectedType}</span>
+                        <div className="flex items-center gap-4 md:ml-4">
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-white/20 tracking-widest">Points</span>
-                            <span className="text-xl font-black text-white">{analysisResult.points_earned}<span className="text-white/20">/{analysisResult.points_possible}</span></span>
+                            <span className="text-[8px] sm:text-[10px] font-black uppercase text-white/20 tracking-widest">Points</span>
+                            <span className="text-lg sm:text-xl font-black text-white">{analysisResult.points_earned}<span className="text-white/20">/{analysisResult.points_possible}</span></span>
                           </div>
                           {analysisResult.critical_failures > 0 && (
                             <div className="flex flex-col">
-                              <span className="text-[10px] font-black uppercase text-red-500/40 tracking-widest">Critical</span>
-                              <span className="text-xl font-black text-red-500">{analysisResult.critical_failures}</span>
+                              <span className="text-[8px] sm:text-[10px] font-black uppercase text-red-500/40 tracking-widest">Critical</span>
+                              <span className="text-lg sm:text-xl font-black text-red-500">{analysisResult.critical_failures}</span>
                             </div>
                           )}
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <h2 className="text-7xl font-black italic tracking-tighter uppercase leading-none">Analysis <span className="text-[#FDBB00]">Complete</span></h2>
-                        <p className="text-white/40 text-sm font-medium italic">{analysisResult.verdict_message}</p>
+                        <h2 className="text-3xl sm:text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-none">Analysis <span className="text-[#FDBB00]">Complete</span></h2>
+                        <p className="text-white/40 text-xs sm:text-sm font-medium italic">{analysisResult.verdict_message}</p>
                       </div>
                     </div>
                  </div>
-                 <div className="flex flex-col sm:flex-row gap-5">
-                   <button onClick={() => { setAnalysisResult(null); setMainFile(null); }} className="px-10 py-6 bg-white/5 hover:bg-white/10 rounded-2xl text-[14px] font-black uppercase tracking-widest border border-white/5 flex items-center gap-3 transition-all"><RefreshCcw size={22} /> New Audit</button>
-                   <button onClick={downloadReport} className="px-10 py-6 bg-[#FDBB00] text-black rounded-2xl hover:scale-105 transition-all shadow-3xl text-[14px] font-black uppercase tracking-widest flex items-center gap-3"><Download size={22} strokeWidth={3} /> Save Report</button>
+                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full xl:w-auto">
+                   <button onClick={() => { setAnalysisResult(null); setMainFile(null); }} className="px-6 sm:px-10 py-4 sm:py-6 bg-white/5 hover:bg-white/10 rounded-xl sm:rounded-2xl text-[12px] sm:text-[14px] font-black uppercase tracking-widest border border-white/5 flex items-center justify-center gap-3 transition-all"><RefreshCcw size={18} /> New Audit</button>
+                   <button onClick={downloadReport} className="px-6 sm:px-10 py-4 sm:py-6 bg-[#FDBB00] text-black rounded-xl sm:rounded-2xl hover:scale-105 transition-all shadow-3xl text-[12px] sm:text-[14px] font-black uppercase tracking-widest flex items-center justify-center gap-3"><Download size={18} strokeWidth={3} /> Save Report</button>
                  </div>
               </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-                <div className="xl:col-span-8 space-y-10">
-                  <div className="bg-black rounded-[4rem] overflow-hidden border border-white/5 aspect-video shadow-2xl relative ring-[12px] ring-[#111]">
-                    {mainVideoUrl ? <video ref={videoRef} src={mainVideoUrl} controls className="w-full h-full object-contain" /> : <div className="w-full h-full flex flex-col items-center justify-center bg-[#0a0a0a] text-white/5 italic"><PlayCircle size={120} strokeWidth={0.5} /><p className="mt-4 font-black uppercase tracking-[0.5em]">Playback Stream Unlinked</p></div>}
+              <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 sm:gap-10">
+                <div className="xl:col-span-8 space-y-6 sm:space-y-10">
+                  <div className="bg-black rounded-3xl sm:rounded-[4rem] overflow-hidden border border-white/5 aspect-video shadow-2xl relative ring-4 sm:ring-[12px] ring-[#111]">
+                    {mainVideoUrl ? <video ref={videoRef} src={mainVideoUrl} controls className="w-full h-full object-contain" /> : <div className="w-full h-full flex flex-col items-center justify-center bg-[#0a0a0a] text-white/5 italic"><PlayCircle className="size-16 sm:size-32" strokeWidth={0.5} /><p className="mt-4 font-black uppercase tracking-[0.5em] text-[10px] sm:text-base">Playback Stream Unlinked</p></div>}
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                     <MetricCard label="Hook Performance" score={analysisResult.hook_performance.score} maxScore={47} icon={<Scissors size={20} />} />
                     <MetricCard label="Motion Graphics" score={analysisResult.motion_graphics.score} maxScore={68} icon={<Target size={20} />} />
                     <MetricCard label="Visual & Technical" score={analysisResult.visual_technical.score} maxScore={52} icon={<ShieldAlert size={20} />} />
@@ -559,26 +946,26 @@ const App: React.FC = () => {
                     <MetricCard label="Platform Policy" score={analysisResult.platform_policy.score} maxScore={57} icon={<Gauge size={20} />} />
                   </div>
 
-                  <div className="bg-[#0f0f0f] border border-white/5 p-12 rounded-[3.5rem] space-y-6 shadow-2xl group relative overflow-hidden">
-                     <div className="absolute top-0 right-0 p-10 opacity-[0.03] rotate-12"><BookOpen size={120} /></div>
-                     <div className="flex items-center gap-4 text-[#FDBB00] mb-2"><Waves size={28} /><h3 className="text-3xl font-black uppercase tracking-tighter italic">Technical Narrative</h3></div>
-                     <p className="text-white/70 text-[20px] leading-relaxed font-medium italic relative z-10">"{analysisResult.overall_summary}"</p>
+                  <div className="bg-[#0f0f0f] border border-white/5 p-6 sm:p-12 rounded-3xl sm:rounded-[3.5rem] space-y-4 sm:space-y-6 shadow-2xl group relative overflow-hidden">
+                     <div className="absolute top-0 right-0 p-6 sm:p-10 opacity-[0.03] rotate-12"><BookOpen className="size-16 sm:size-32" /></div>
+                     <div className="flex items-center gap-3 sm:gap-4 text-[#FDBB00] mb-2"><Waves size={24} className="sm:size-28" /><h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter italic">Technical Narrative</h3></div>
+                     <p className="text-white/70 text-base sm:text-[20px] leading-relaxed font-medium italic relative z-10">"{analysisResult.overall_summary}"</p>
                   </div>
                 </div>
 
-                <div className="xl:col-span-4 space-y-10">
-                  <div className="bg-[#0f0f0f] border border-white/5 rounded-[4rem] h-full flex flex-col overflow-hidden shadow-2xl border-t-[#FDBB00]/20 min-h-[900px]">
-                    <div className="p-10 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
-                      <div className="flex items-center gap-4"><Clock size={28} className="text-[#FDBB00]" /><h3 className="text-2xl font-black italic tracking-tighter uppercase">Audit <span className="text-[#FDBB00]">Markers</span></h3></div>
+                <div className="xl:col-span-4 space-y-6 sm:space-y-10">
+                  <div className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[4rem] h-full flex flex-col overflow-hidden shadow-2xl border-t-[#FDBB00]/20 min-h-[500px] xl:min-h-[900px]">
+                    <div className="p-6 sm:p-10 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
+                      <div className="flex items-center gap-3 sm:gap-4"><Clock size={24} className="sm:size-28 text-[#FDBB00]" /><h3 className="text-xl sm:text-2xl font-black italic tracking-tighter uppercase">Audit <span className="text-[#FDBB00]">Markers</span></h3></div>
                     </div>
                     
-                    <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-10 space-y-6 sm:space-y-10 custom-scrollbar">
                       {analysisResult.timestamped_betterment.map((marker, i) => (
-                        <div key={i} className={`bg-white/[0.02] border p-8 rounded-[3rem] transition-all flex flex-col gap-6 shadow-inner ${marker.isIgnored ? 'opacity-40 grayscale' : ''} ${activeCommentMarker === i ? 'border-[#FDBB00]/50 bg-[#FDBB00]/5' : 'border-white/5 hover:border-[#FDBB00]/30'}`}>
-                           <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <span className="text-[14px] font-black text-[#FDBB00] bg-[#FDBB00]/10 px-6 py-2.5 rounded-2xl border border-[#FDBB00]/20 font-mono shadow-md">{marker.timestamp}</span>
-                                 <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                        <div key={i} className={`bg-white/[0.02] border p-4 sm:p-8 rounded-2xl sm:rounded-[3rem] transition-all flex flex-col gap-4 sm:gap-6 shadow-inner ${marker.isIgnored ? 'opacity-40 grayscale' : ''} ${activeCommentMarker === i ? 'border-[#FDBB00]/50 bg-[#FDBB00]/5' : 'border-white/5 hover:border-[#FDBB00]/30'}`}>
+                           <div className="flex items-center justify-between gap-2">
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                                <span className="text-[12px] sm:text-[14px] font-black text-[#FDBB00] bg-[#FDBB00]/10 px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-xl sm:rounded-2xl border border-[#FDBB00]/20 font-mono shadow-md">{marker.timestamp}</span>
+                                 <span className={`px-3 sm:px-4 py-1 sm:py-2 rounded-lg sm:rounded-xl text-[8px] sm:text-[10px] font-black uppercase tracking-widest border ${
                                    marker.isIgnored ? 'bg-white/10 border-white/20 text-white/40' :
                                    marker.severity === 'Critical' ? 'bg-red-600 border-red-700 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]' :
                                    marker.severity === 'High' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
@@ -587,17 +974,22 @@ const App: React.FC = () => {
                                  }`}>
                                    {marker.isIgnored ? 'Ignored' : marker.severity}
                                  </span>
-                                {mainVideoUrl && <button onClick={() => seekToTimestamp(marker.timestamp)} className="w-12 h-12 bg-[#FDBB00]/10 hover:bg-[#FDBB00] hover:text-black rounded-xl flex items-center justify-center transition-all shadow-xl group/play"><Play size={20} fill="currentColor" /></button>}
+                                {mainVideoUrl && <button onClick={() => seekToTimestamp(marker.timestamp)} className="w-10 h-10 sm:w-12 sm:h-12 bg-[#FDBB00]/10 hover:bg-[#FDBB00] hover:text-black rounded-lg sm:rounded-xl flex items-center justify-center transition-all shadow-xl group/play"><Play size={16} fill="currentColor" /></button>}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <button onClick={() => setActiveCommentMarker(activeCommentMarker === i ? null : i)} className={`p-3 rounded-xl transition-all ${activeCommentMarker === i ? 'bg-[#FDBB00] text-black' : 'bg-white/5 text-white/40 hover:text-white'}`}><MessageSquare size={20} /></button>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button onClick={() => toggleMarkerIgnored(i)} className={`p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all ${marker.isIgnored ? 'bg-green-500 text-white' : 'bg-white/5 text-white/40 hover:text-white'}`} title={marker.isIgnored ? "Restore Marker" : "Ignore Marker"}>
+                                  {marker.isIgnored ? <CheckCircle2 size={18} /> : <EyeOff size={18} />}
+                                </button>
+                                <button onClick={() => setActiveCommentMarker(activeCommentMarker === i ? null : i)} className={`p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all ${activeCommentMarker === i ? 'bg-[#FDBB00] text-black' : 'bg-white/5 text-white/40 hover:text-white'}`} title="Discuss with AI">
+                                  <MessageSquare size={18} />
+                                </button>
                               </div>
                            </div>
-                           <div className="space-y-4">
-                             <p className="text-[17px] font-bold text-white/90 leading-snug">{marker.description}</p>
-                             <div className="bg-[#FDBB00]/5 p-6 rounded-[2rem] border-l-4 border-[#FDBB00] flex items-start gap-4 shadow-inner">
-                                <Zap size={20} className="text-[#FDBB00] shrink-0 mt-1" />
-                                <div className="space-y-1"><p className="text-[11px] font-black uppercase text-[#FDBB00] tracking-[0.2em]">Fix Recommendation</p><p className="text-[15px] font-black text-white leading-relaxed">{marker.actionable_fix}</p></div>
+                           <div className="space-y-3 sm:space-y-4">
+                             <p className="text-sm sm:text-[17px] font-bold text-white/90 leading-snug">{marker.description}</p>
+                             <div className="bg-[#FDBB00]/5 p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border-l-4 border-[#FDBB00] flex items-start gap-3 sm:gap-4 shadow-inner">
+                                <Zap size={18} className="text-[#FDBB00] shrink-0 mt-1" />
+                                <div className="space-y-1"><p className="text-[9px] sm:text-[11px] font-black uppercase text-[#FDBB00] tracking-[0.2em]">Fix Recommendation</p><p className="text-[13px] sm:text-[15px] font-black text-white leading-relaxed">{marker.actionable_fix}</p></div>
                              </div>
                            </div>
 
@@ -658,49 +1050,56 @@ const App: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="max-w-[1200px] mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-12 duration-1000 py-10">
-               <div className="text-center space-y-8"><h2 className="text-[100px] font-black italic tracking-tighter uppercase leading-[0.8] tracking-[-0.04em]"><span className="text-[#FDBB00]">Video</span><br/>Review Engine</h2><p className="text-[16px] font-black text-white/20 uppercase tracking-[0.8em]">Technical Content Audit Protocol</p></div>
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                <div className="lg:col-span-8 space-y-8">
+            <div className="max-w-[1200px] mx-auto space-y-10 sm:space-y-16 animate-in fade-in slide-in-from-bottom-12 duration-1000 py-6 sm:py-10">
+               
+               <div className="text-center space-y-4 sm:space-y-8">
+                 <h2 className="text-4xl sm:text-6xl lg:text-[100px] font-black italic tracking-tighter uppercase leading-[0.8] tracking-[-0.04em]"><span className="text-[#FDBB00]">Video</span><br/>Review Engine</h2>
+                 <p className="text-[10px] sm:text-[14px] lg:text-[16px] font-black text-white/20 uppercase tracking-[0.4em] sm:tracking-[0.8em]">Technical Content Audit Protocol</p>
+               </div>
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12">
+                <div className="lg:col-span-8 space-y-6 sm:space-y-8">
                     <div 
-                      className={`bg-[#0f0f0f] border-2 border-dashed rounded-[5rem] p-36 text-center cursor-pointer group shadow-3xl relative overflow-hidden transition-all duration-700 ${mainFile ? 'border-green-500/40 bg-green-500/5' : isDragging ? 'border-[#FDBB00] bg-[#FDBB00]/[0.05]' : 'border-white/5 hover:border-[#FDBB00] hover:bg-[#FDBB00]/[0.02]'}`} 
+                      className={`bg-[#0f0f0f] border-2 border-dashed rounded-3xl sm:rounded-[5rem] p-10 sm:p-20 lg:p-36 text-center cursor-pointer group shadow-3xl relative overflow-hidden transition-all duration-700 ${mainFile ? 'border-green-500/40 bg-green-500/5' : isDragging ? 'border-[#FDBB00] bg-[#FDBB00]/[0.05]' : 'border-white/5 hover:border-[#FDBB00] hover:bg-[#FDBB00]/[0.02]'}`} 
                       onClick={() => document.getElementById('main-input')?.click()}
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
                     >
                       <input id="main-input" type="file" className="hidden" accept="video/*" onChange={e => e.target.files?.[0] && setMainFile(e.target.files[0])} />
-                      <div className="w-32 h-32 bg-white/5 rounded-[3rem] flex items-center justify-center mx-auto mb-12 group-hover:scale-110 transition-all shadow-3xl border border-white/5 shadow-[0_0_50px_rgba(253,187,0,0.05)]">{mainFile ? <CheckCircle2 className="text-green-500" size={56} /> : <Upload className="text-[#FDBB00]" size={56} />}</div>
-                      <h4 className="text-5xl font-black mb-6 tracking-tighter">{mainFile ? mainFile.name : 'Staging Asset for Review'}</h4>
-                      <p className="text-[16px] font-bold text-white/20 uppercase tracking-[0.4em]">{isDragging ? 'Drop to Upload' : 'Optimized for UHD Playback Containers'}</p>
+                      <div className="w-20 h-20 sm:w-32 sm:h-32 bg-white/5 rounded-2xl sm:rounded-[3rem] flex items-center justify-center mx-auto mb-6 sm:mb-12 group-hover:scale-110 transition-all shadow-3xl border border-white/5 shadow-[0_0_50px_rgba(253,187,0,0.05)]">{mainFile ? <CheckCircle2 className="text-green-500" size={40} /> : <Upload className="text-[#FDBB00]" size={40} />}</div>
+                      <h4 className="text-2xl sm:text-5xl font-black mb-4 sm:mb-6 tracking-tighter">{mainFile ? mainFile.name : 'Staging Asset for Review'}</h4>
+                      <p className="text-[12px] sm:text-[16px] font-bold text-white/20 uppercase tracking-[0.2em] sm:tracking-[0.4em]">{isDragging ? 'Drop to Upload' : 'Optimized for UHD Playback Containers'}</p>
                     </div>
                   </div>
-                 <div className="lg:col-span-4 space-y-8">
-                   <div className="bg-[#0f0f0f] border border-white/5 rounded-[4rem] p-12 space-y-12 shadow-3xl border-t-white/10">
-                      <div className="space-y-6"><p className="text-[12px] font-black text-white/30 uppercase tracking-[0.4em]">Review Context</p><div className="space-y-3">{(['Social Media', 'Ad / Commercial', 'Educational', 'Entertainment'] as VideoType[]).map(t => (<button key={t} onClick={() => setSelectedType(t)} className={`w-full px-8 py-5 rounded-2xl text-[14px] font-black text-left flex items-center justify-between border transition-all ${selectedType === t ? 'bg-[#FDBB00] border-[#FDBB00] text-black shadow-3xl scale-[1.03]' : 'bg-white/[0.02] border-white/5 text-white/40 hover:border-white/20 hover:text-white'}`}>{t} {selectedType === t && <CheckCircle2 size={20} strokeWidth={3} />}</button>))}</div></div>
-                      <div className="space-y-6"><p className="text-[12px] font-black text-white/30 uppercase tracking-[0.4em]">Assigned Auditor</p><div className="grid grid-cols-2 gap-3">{TEAM_MEMBERS.map(m => (<button key={m} onClick={() => setSelectedAuditor(m)} className={`px-6 py-5 rounded-2xl text-[13px] font-black border transition-all ${selectedAuditor === m ? 'bg-white/10 border-white/30 text-white shadow-2xl scale-[1.05]' : 'bg-transparent border-white/5 text-white/30 hover:border-white/10 hover:text-white'}`}>{m}</button>))}</div></div>
+                 <div className="lg:col-span-4 space-y-6 sm:space-y-8">
+                   <div className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[4rem] p-6 sm:p-12 space-y-8 sm:space-y-12 shadow-3xl border-t-white/10">
+                      <div className="space-y-4 sm:space-y-6"><p className="text-[10px] sm:text-[12px] font-black text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.4em]">Review Context</p><div className="space-y-2 sm:space-y-3">{(['Social Media', 'Ad / Commercial', 'Educational', 'Entertainment'] as VideoType[]).map(t => (<button key={t} onClick={() => setSelectedType(t)} className={`w-full px-6 sm:px-8 py-4 sm:py-5 rounded-xl sm:rounded-2xl text-[12px] sm:text-[14px] font-black text-left flex items-center justify-between border transition-all ${selectedType === t ? 'bg-[#FDBB00] border-[#FDBB00] text-black shadow-3xl scale-[1.03]' : 'bg-white/[0.02] border-white/5 text-white/40 hover:border-white/20 hover:text-white'}`}>{t} {selectedType === t && <CheckCircle2 size={18} strokeWidth={3} />}</button>))}</div></div>
+                      <div className="space-y-4 sm:space-y-6"><p className="text-[10px] sm:text-[12px] font-black text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.4em]">Assigned Auditor</p><div className="grid grid-cols-2 gap-2 sm:gap-3">{TEAM_MEMBERS.map(m => (<button key={m} onClick={() => setSelectedAuditor(m)} className={`px-4 sm:px-6 py-4 sm:py-5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] font-black border transition-all ${selectedAuditor === m ? 'bg-white/10 border-white/30 text-white shadow-2xl scale-[1.05]' : 'bg-transparent border-white/5 text-white/30 hover:border-white/10 hover:text-white'}`}>{m}</button>))}</div></div>
                    </div>
-                   <button disabled={!mainFile} onClick={runAnalysis} className="w-full py-14 bg-gradient-to-tr from-[#FDBB00] to-orange-500 text-black font-black text-3xl rounded-[4rem] uppercase tracking-[0.5em] shadow-[0_40px_80px_-20px_rgba(253,187,0,0.4)] hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-20 disabled:grayscale group relative overflow-hidden"><span className="relative z-10 group-hover:tracking-[0.7em] transition-all duration-700">Initiate Review</span><div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-700" /></button>
+                   <button disabled={!mainFile || isAnalyzing} onClick={runAnalysis} className="w-full py-8 sm:py-14 bg-gradient-to-tr from-[#FDBB00] to-orange-500 text-black font-black text-xl sm:text-3xl rounded-3xl sm:rounded-[4rem] uppercase tracking-[0.3em] sm:tracking-[0.5em] shadow-[0_40px_80px_-20px_rgba(253,187,0,0.4)] hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-20 disabled:grayscale group relative overflow-hidden"><span className="relative z-10 group-hover:tracking-[0.7em] transition-all duration-700">{isAnalyzing ? 'Analyzing...' : 'Initiate Review'}</span><div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-700" /></button>
                  </div>
+               </div>
+               <div className="pt-20 border-t border-white/5">
+                 <LiveActivityFeed activities={liveActivities} />
                </div>
             </div>
           )
         )}
 
         {activeTab === 'guidelines' && (
-          <div className="max-w-[1400px] mx-auto space-y-20 animate-in fade-in slide-in-from-bottom-10 py-10">
-            <div className="text-center space-y-6">
-              <h3 className="text-8xl font-black italic tracking-tighter uppercase leading-none">Quality <span className="text-[#FDBB00]">Benchmarks</span></h3>
-              <p className="text-[16px] font-black text-white/20 uppercase tracking-[0.8em]">3DM Agency Video Review Protocol</p>
+          <div className="max-w-[1400px] mx-auto space-y-12 sm:space-y-20 animate-in fade-in slide-in-from-bottom-10 py-6 sm:py-10">
+            <div className="text-center space-y-4 sm:space-y-6">
+              <h3 className="text-4xl sm:text-6xl lg:text-8xl font-black italic tracking-tighter uppercase leading-none">Quality <span className="text-[#FDBB00]">Benchmarks</span></h3>
+              <p className="text-[10px] sm:text-[14px] lg:text-[16px] font-black text-white/20 uppercase tracking-[0.4em] sm:tracking-[0.8em]">3DM Agency Video Review Protocol</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10">
               {/* Format Standards */}
-              <div className="lg:col-span-5 bg-[#0f0f0f] border border-white/5 rounded-[4rem] p-12 shadow-3xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-12 opacity-[0.02] rotate-12"><FileVideo size={160} /></div>
-                <div className="space-y-8 relative z-10">
-                  <div className="flex items-center gap-4 text-[#FDBB00]"><FileVideo size={32} /><h4 className="text-3xl font-black italic tracking-tighter uppercase">Format Standards</h4></div>
-                  <div className="space-y-4">
+              <div className="lg:col-span-5 bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[4rem] p-6 sm:p-12 shadow-3xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 sm:p-12 opacity-[0.02] rotate-12"><FileVideo className="size-24 sm:size-40" /></div>
+                <div className="space-y-6 sm:space-y-8 relative z-10">
+                  <div className="flex items-center gap-3 sm:gap-4 text-[#FDBB00]"><FileVideo size={24} className="sm:size-32" /><h4 className="text-xl sm:text-3xl font-black italic tracking-tighter uppercase">Format Standards</h4></div>
+                  <div className="space-y-2 sm:space-y-4">
                     {[
                       { label: 'Aspect Ratio', value: '9:16 Preferred' },
                       { label: 'Resolution', value: '1080 × 1920 Minimum' },
@@ -710,9 +1109,9 @@ const App: React.FC = () => {
                       { label: 'Duration', value: '6–45 seconds' },
                       { label: 'File Format', value: 'MP4' }
                     ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between py-4 border-b border-white/5 last:border-0">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white/30">{item.label}</span>
-                        <span className="text-[15px] font-black text-white">{item.value}</span>
+                      <div key={idx} className="flex items-center justify-between py-3 sm:py-4 border-b border-white/5 last:border-0">
+                        <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">{item.label}</span>
+                        <span className="text-[13px] sm:text-[15px] font-black text-white">{item.value}</span>
                       </div>
                     ))}
                   </div>
@@ -720,7 +1119,7 @@ const App: React.FC = () => {
               </div>
 
               {/* Quality Breakdown */}
-              <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                 {[
                   { title: 'Hook Performance', weight: '20%', icon: <Scissors />, color: 'text-[#FDBB00]', items: ['Strong 3s hook', 'No dead frames', 'Property ID by 2s', 'Headline by 2s', 'No logo-first'] },
                   { title: 'Motion Graphics', weight: '20%', icon: <Target />, color: 'text-blue-400', items: ['Natural easing', 'Legible typography', 'Consistent transitions', 'Visual hierarchy', 'Hold durations'] },
@@ -729,17 +1128,17 @@ const App: React.FC = () => {
                   { title: 'Audio & Captions', weight: '15%', icon: <Volume2 />, color: 'text-purple-400', items: ['Balanced VO/Music mix', 'No clipping/distortion', 'Tone matches positioning', 'Accurate captions', 'Clean audio fades'] },
                   { title: 'Platform Policy', weight: '15%', icon: <Gauge />, color: 'text-orange-400', items: ['No unverified ROI claims', 'No discriminatory language', 'Text-to-image ratio', 'Pacing by segment', 'Regulatory disclaimers'] }
                 ].map((cat, idx) => (
-                  <div key={idx} className="bg-[#0f0f0f] border border-white/5 rounded-[3.5rem] p-10 space-y-6 hover:border-white/10 transition-all group">
+                  <div key={idx} className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[3.5rem] p-6 sm:p-10 space-y-4 sm:space-y-6 hover:border-white/10 transition-all group">
                     <div className="flex items-center justify-between">
-                      <div className={`p-4 bg-white/5 rounded-2xl ${cat.color} group-hover:scale-110 transition-transform`}>{React.cloneElement(cat.icon as React.ReactElement, { size: 24 })}</div>
-                      <span className="text-2xl font-black italic text-white/20">{cat.weight}</span>
+                      <div className={`p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl ${cat.color} group-hover:scale-110 transition-transform`}>{React.cloneElement(cat.icon as React.ReactElement, { size: 20 })}</div>
+                      <span className="text-xl sm:text-2xl font-black italic text-white/20">{cat.weight}</span>
                     </div>
-                    <div className="space-y-4">
-                      <h5 className="text-xl font-black uppercase tracking-tighter italic">{cat.title}</h5>
-                      <ul className="space-y-2">
+                    <div className="space-y-3 sm:space-y-4">
+                      <h5 className="text-lg sm:text-xl font-black uppercase tracking-tighter italic">{cat.title}</h5>
+                      <ul className="space-y-1.5 sm:space-y-2">
                         {cat.items.map((item, i) => (
-                          <li key={i} className="flex items-center gap-3 text-[13px] text-white/50 font-medium italic">
-                            <div className="w-1.5 h-1.5 rounded-full bg-white/10" /> {item}
+                          <li key={i} className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-[13px] text-white/50 font-medium italic">
+                            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white/10" /> {item}
                           </li>
                         ))}
                       </ul>
@@ -873,29 +1272,29 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'feedback' && (
-           <div className="max-w-4xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-10 py-10">
-              <div className="text-center space-y-6">
-                 <h3 className="text-7xl font-black italic tracking-tighter uppercase leading-none">System <span className="text-[#FDBB00]">Evolution</span></h3>
-                 <p className="text-[14px] font-black text-white/20 uppercase tracking-[0.5em]">Refining the Review Engine Algorithm</p>
+           <div className="max-w-4xl mx-auto space-y-10 sm:space-y-16 animate-in fade-in slide-in-from-bottom-10 py-6 sm:py-10">
+              <div className="text-center space-y-4 sm:space-y-6">
+                 <h3 className="text-4xl sm:text-7xl font-black italic tracking-tighter uppercase leading-none">System <span className="text-[#FDBB00]">Evolution</span></h3>
+                 <p className="text-[10px] sm:text-[14px] font-black text-white/20 uppercase tracking-[0.3em] sm:tracking-[0.5em]">Refining the Review Engine Algorithm</p>
               </div>
 
-              <div className="bg-[#0f0f0f] border border-white/5 p-12 rounded-[4rem] shadow-3xl space-y-12 border-t-white/5">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="bg-[#0f0f0f] border border-white/5 p-6 sm:p-12 rounded-3xl sm:rounded-[4rem] shadow-3xl space-y-8 sm:space-y-12 border-t-white/5">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10">
                    <div className="space-y-4">
-                      <p className="text-[11px] font-black uppercase tracking-widest text-white/30">User Sentiment</p>
-                      <div className="flex gap-4">
+                      <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">User Sentiment</p>
+                      <div className="flex gap-2 sm:gap-4">
                         {[1, 2, 3, 4, 5].map(s => (
-                          <button key={s} onClick={() => setFeedbackRating(s)} className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${feedbackRating >= s ? 'bg-[#FDBB00] text-black shadow-[0_0_30px_rgba(253,187,0,0.3)]' : 'bg-white/5 text-white/20 hover:bg-white/10'}`}>
-                            <Star size={24} fill={feedbackRating >= s ? "currentColor" : "none"} strokeWidth={2.5} />
+                          <button key={s} onClick={() => setFeedbackRating(s)} className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all ${feedbackRating >= s ? 'bg-[#FDBB00] text-black shadow-[0_0_30px_rgba(253,187,0,0.3)]' : 'bg-white/5 text-white/20 hover:bg-white/10'}`}>
+                            <Star size={20} className="sm:size-24" fill={feedbackRating >= s ? "currentColor" : "none"} strokeWidth={2.5} />
                           </button>
                         ))}
                       </div>
                    </div>
                    <div className="space-y-4">
-                      <p className="text-[11px] font-black uppercase tracking-widest text-white/30">Update Category</p>
+                      <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">Update Category</p>
                       <div className="flex flex-wrap gap-2">
                         {['Improvement', 'Bug', 'Feature', 'Other'].map(t => (
-                          <button key={t} onClick={() => setFeedbackType(t as any)} className={`px-5 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${feedbackType === t ? 'bg-white/10 border-white/40 text-white shadow-xl' : 'bg-white/5 border-transparent text-white/20 hover:text-white/40'}`}>
+                          <button key={t} onClick={() => setFeedbackType(t as any)} className={`px-4 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${feedbackType === t ? 'bg-white/10 border-white/40 text-white shadow-xl' : 'bg-white/5 border-transparent text-white/20 hover:text-white/40'}`}>
                             {t}
                           </button>
                         ))}
@@ -903,73 +1302,130 @@ const App: React.FC = () => {
                    </div>
                  </div>
                  <div className="space-y-4">
-                   <p className="text-[11px] font-black uppercase tracking-widest text-white/30">Protocol Suggestion / Field Report</p>
-                   <textarea value={feedbackMsg} onChange={e => setFeedbackMsg(e.target.value)} placeholder="What can we refine in the Video Review Engine?" className="w-full bg-white/5 border border-white/10 rounded-3xl px-8 py-6 outline-none focus:border-[#FDBB00] min-h-[160px] text-lg italic transition-all" />
+                   <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">Protocol Suggestion / Field Report</p>
+                   <textarea value={feedbackMsg} onChange={e => setFeedbackMsg(e.target.value)} placeholder="What can we refine in the Video Review Engine?" className="w-full bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl px-6 sm:px-8 py-4 sm:py-6 outline-none focus:border-[#FDBB00] min-h-[120px] sm:min-h-[160px] text-base sm:text-lg italic transition-all" />
                  </div>
-                 <button onClick={submitFeedback} className="w-full py-8 bg-gradient-to-tr from-[#FDBB00] to-orange-500 text-black font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-[0_20px_60px_-10px_rgba(253,187,0,0.4)] hover:scale-[1.02] transition-all">Submit Protocol Suggestion</button>
+                 <button onClick={submitFeedback} className="w-full py-6 sm:py-8 bg-gradient-to-tr from-[#FDBB00] to-orange-500 text-black font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] rounded-2xl sm:rounded-[2.5rem] shadow-[0_20px_60px_-10px_rgba(253,187,0,0.4)] hover:scale-[1.02] transition-all text-sm sm:text-base">Submit Protocol Suggestion</button>
               </div>
 
-              <div className="space-y-8">
-                 <h4 className="text-2xl font-black italic tracking-tighter uppercase opacity-30">Agency Development Log</h4>
-                 <div className="space-y-6">
+              <div className="space-y-6 sm:space-y-8">
+                 <h4 className="text-xl sm:text-2xl font-black italic tracking-tighter uppercase opacity-30">Agency Development Log</h4>
+                 <div className="space-y-4 sm:space-y-6">
                     {feedbacks.length > 0 ? feedbacks.slice(0, 5).map(fb => (
-                      <div key={fb.id} className="bg-white/[0.02] border border-white/5 p-8 rounded-[2.5rem] flex items-start gap-6 hover:bg-white/[0.04] transition-all group">
-                         <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center shrink-0 border border-white/5 group-hover:border-[#FDBB00]/30 transition-all">
-                            {fb.type === 'Bug' ? <AlertTriangle className="text-red-400" size={24} /> : <Sparkles className="text-[#FDBB00]" size={24} />}
+                      <div key={fb.id} className="bg-white/[0.02] border border-white/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] flex items-start gap-4 sm:gap-6 hover:bg-white/[0.04] transition-all group">
+                         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center shrink-0 border border-white/5 group-hover:border-[#FDBB00]/30 transition-all">
+                            {fb.type === 'Bug' ? <AlertTriangle className="text-red-400 size-5 sm:size-6" /> : <Sparkles className="text-[#FDBB00] size-5 sm:size-6" />}
                          </div>
-                         <div className="space-y-2">
-                            <div className="flex items-center gap-4">
-                               <p className="text-[13px] font-black text-[#FDBB00] uppercase tracking-widest">{fb.user}</p>
-                               <span className="text-white/10 text-[10px] uppercase font-black tracking-widest">{new Date(fb.date).toLocaleDateString()}</span>
+                         <div className="space-y-1 sm:space-y-2">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                               <p className="text-[11px] sm:text-[13px] font-black text-[#FDBB00] uppercase tracking-widest">{fb.user}</p>
+                               <span className="text-white/10 text-[8px] sm:text-[10px] uppercase font-black tracking-widest">{new Date(fb.date).toLocaleDateString()}</span>
                             </div>
-                            <p className="text-white/70 italic leading-relaxed">"{fb.message}"</p>
+                            <p className="text-sm sm:text-base text-white/70 italic leading-relaxed">"{fb.message}"</p>
                          </div>
                       </div>
-                    )) : <p className="text-center text-white/10 py-10 uppercase tracking-[0.6em] font-black text-sm italic">Log core empty</p>}
+                    )) : <p className="text-center text-white/10 py-10 uppercase tracking-[0.6em] font-black text-xs sm:text-sm italic">Log core empty</p>}
                  </div>
               </div>
            </div>
         )}
 
         {activeTab === 'archive' && (
-           <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-10 py-10">
-              <div className="flex items-center justify-between border-b border-white/5 pb-12 gap-8">
-                <div className="space-y-3"><h3 className="text-7xl font-black italic tracking-tighter uppercase leading-none">Session <span className="text-[#FDBB00]">Vault</span></h3><p className="text-[14px] font-black text-white/20 uppercase tracking-[0.5em]">Permanent Agency Review Archives</p></div>
-                <div className="flex items-center gap-8"><span className="text-[16px] font-black text-white/30 uppercase tracking-widest bg-white/5 px-8 py-4 rounded-3xl border border-white/5 shadow-inner">{history.length} SESSIONS SAVED</span>{history.length > 0 && <button onClick={clearHistory} className="p-6 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-[2rem] transition-all border border-red-500/20 shadow-3xl group"><Trash2 size={28} className="group-hover:scale-110 transition-transform" /></button>}</div>
+           <div className="max-w-6xl mx-auto space-y-10 sm:space-y-12 animate-in fade-in slide-in-from-bottom-10 py-6 sm:py-10">
+              <div className="flex flex-col md:flex-row items-center justify-between border-b border-white/5 pb-8 sm:pb-12 gap-6 sm:gap-8">
+                <div className="space-y-2 sm:space-y-3 text-center md:text-left">
+                  <h3 className="text-4xl sm:text-7xl font-black italic tracking-tighter uppercase leading-none">Session <span className="text-[#FDBB00]">Vault</span></h3>
+                  <p className="text-[10px] sm:text-[14px] font-black text-white/20 uppercase tracking-[0.3em] sm:tracking-[0.5em]">Permanent Agency Review Archives</p>
+                </div>
+                <div className="flex items-center gap-4 sm:gap-8">
+                  <span className="text-[12px] sm:text-[16px] font-black text-white/30 uppercase tracking-widest bg-white/5 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl sm:rounded-3xl border border-white/5 shadow-inner">{history.length} SESSIONS</span>
+                  {history.length > 0 && <button onClick={clearHistory} className="p-4 sm:p-6 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-2xl sm:rounded-[2rem] transition-all border border-red-500/20 shadow-3xl group"><Trash2 size={24} className="sm:size-28 group-hover:scale-110 transition-transform" /></button>}
+                </div>
               </div>
               {history.length > 0 ? (
-                <div className="grid grid-cols-1 gap-8">
+                <div className="grid grid-cols-1 gap-6 sm:gap-8">
                   {history.map(item => (
-                    <div key={item.id} className="bg-[#0f0f0f] border border-white/5 p-12 rounded-[4rem] flex flex-col md:flex-row items-center justify-between hover:border-[#FDBB00]/40 transition-all group cursor-pointer shadow-3xl border-t-white/10 gap-8" onClick={() => loadFromHistory(item)}>
-                      <div className="flex items-center gap-12"><div className="w-28 h-28 bg-white/5 rounded-[2.5rem] flex items-center justify-center text-white/10 group-hover:text-[#FDBB00] transition-all border border-white/5 shadow-inner duration-500"><FileVideo size={56} strokeWidth={1} /></div><div className="space-y-3"><h4 className="text-4xl font-black group-hover:text-white transition-colors tracking-tighter">{item.fileName}</h4><div className="flex flex-wrap items-center gap-12 text-[14px] font-bold text-white/30 uppercase tracking-widest mt-1"><span className="flex items-center gap-3"><UserCheck size={20} className="text-[#FDBB00] shadow-glow" /> {item.auditorName}</span><span className="flex items-center gap-3"><Clock size={20} /> {new Date(item.date).toLocaleDateString()}</span><span className="px-5 py-2 bg-white/5 rounded-2xl text-[11px] font-black border border-white/5">{item.result.videoType}</span></div></div></div>
-                      <div className="flex items-center gap-16 w-full md:w-auto justify-between md:justify-end"><div className="text-right space-y-2 shrink-0"><p className="text-[14px] font-black text-white/20 uppercase tracking-widest">Master Quality Score</p><p className={`text-6xl font-black ${item.result.overallScore >= 75 ? 'text-green-500' : 'text-red-500'} tracking-tighter`}>{item.result.overallScore}%</p></div><div className="p-8 bg-white/5 rounded-[2.5rem] group-hover:bg-[#FDBB00] group-hover:text-black transition-all duration-500 shadow-3xl"><ChevronRight size={40} strokeWidth={4} /></div></div>
+                    <div key={item.id} className="bg-[#0f0f0f] border border-white/5 p-6 sm:p-12 rounded-3xl sm:rounded-[4rem] flex flex-col md:flex-row items-center justify-between hover:border-[#FDBB00]/40 transition-all group cursor-pointer shadow-3xl border-t-white/10 gap-6 sm:gap-8" onClick={() => loadFromHistory(item)}>
+                      <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-12 text-center sm:text-left">
+                        <div className="w-20 h-20 sm:w-28 sm:h-28 bg-white/5 rounded-2xl sm:rounded-[2.5rem] flex items-center justify-center text-white/10 group-hover:text-[#FDBB00] transition-all border border-white/5 shadow-inner duration-500">
+                          <FileVideo size={40} className="sm:size-56" strokeWidth={1} />
+                        </div>
+                        <div className="space-y-2 sm:space-y-3">
+                          <h4 className="text-2xl sm:text-4xl font-black group-hover:text-white transition-colors tracking-tighter">{item.fileName}</h4>
+                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-12 text-[11px] sm:text-[14px] font-bold text-white/30 uppercase tracking-widest mt-1">
+                            <span className="flex items-center gap-2 sm:gap-3"><UserCheck size={16} className="sm:size-20 text-[#FDBB00] shadow-glow" /> {item.auditorName}</span>
+                            <span className="flex items-center gap-2 sm:gap-3"><Clock size={16} className="sm:size-20" /> {new Date(item.date).toLocaleDateString()}</span>
+                            <span className="px-3 sm:px-5 py-1 sm:py-2 bg-white/5 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black border border-white/5">{item.result.videoType}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-8 sm:gap-16 w-full md:w-auto justify-between md:justify-end">
+                        <div className="text-right space-y-1 sm:space-y-2 shrink-0">
+                          <p className="text-[10px] sm:text-[14px] font-black text-white/20 uppercase tracking-widest">Master Score</p>
+                          <p className={`text-4xl sm:text-6xl font-black ${item.result.overallScore >= 75 ? 'text-green-500' : 'text-red-500'} tracking-tighter`}>{item.result.overallScore}%</p>
+                        </div>
+                        <div className="p-6 sm:p-8 bg-white/5 rounded-2xl sm:rounded-[2.5rem] group-hover:bg-[#FDBB00] group-hover:text-black transition-all duration-500 shadow-3xl">
+                          <ChevronRight size={24} className="sm:size-40" strokeWidth={4} />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
-              ) : ( <div className="py-64 text-center opacity-10 flex flex-col items-center select-none"><HistoryIcon size={160} strokeWidth={0.5} className="mb-12 animate-pulse" /><p className="text-5xl font-black uppercase tracking-[0.8em]">Vault core empty</p></div> )}
+              ) : ( <div className="py-32 sm:py-64 text-center opacity-10 flex flex-col items-center select-none"><HistoryIcon size={100} strokeWidth={0.5} className="sm:size-160 mb-8 sm:mb-12 animate-pulse" /><p className="text-2xl sm:text-5xl font-black uppercase tracking-[0.4em] sm:tracking-[0.8em]">Vault core empty</p></div> )}
            </div>
         )}
 
         {activeTab === 'team' && (
-          <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-10 py-10">
-             <div className="flex items-center justify-between border-b border-white/5 pb-12 gap-8"><div className="space-y-3"><h3 className="text-7xl font-black italic tracking-tighter uppercase leading-none">Team <span className="text-[#FDBB00]">Scores</span></h3><p className="text-[14px] font-black text-white/20 uppercase tracking-[0.5em]">Global Operational KPI Metrics</p></div><div className="flex items-center gap-8"><div className="text-right space-y-1"><p className="text-[12px] font-black text-white/20 uppercase tracking-widest">Unified Performance</p><p className="text-5xl font-black text-[#FDBB00] tracking-tighter leading-none shadow-glow">{history.length > 0 ? Math.round(history.reduce((a, b) => a + b.result.overallScore, 0) / history.length) : 0}%</p></div><BarChart3 className="text-[#FDBB00] shadow-glow" size={64} /></div></div>
-             <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-white/10 rounded-[4rem] p-12 shadow-3xl relative group overflow-hidden border-t-white/10">
-                <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity duration-700"><Database size={200} /></div>
-                <div className="flex flex-col md:flex-row items-center justify-between gap-10 relative z-10">
-                   <div className="space-y-4 text-center md:text-left"><div className="flex items-center gap-3 text-[#FDBB00] justify-center md:justify-start"><Database size={24} className="shadow-glow" /><h3 className="text-2xl font-black uppercase tracking-tighter">Agency Sync Hub</h3></div><p className="text-white/40 max-w-md text-[15px] leading-relaxed">Consolidate scoreboards from all systems. Export your local master vault or merge teammate data to build a truly global agency performance dashboard.</p></div>
-                   <div className="flex flex-wrap gap-4 justify-center">
-                      <button onClick={exportTeamData} className="px-8 py-5 bg-white/5 hover:bg-white/10 rounded-2xl text-[12px] font-black uppercase tracking-widest border border-white/10 flex items-center gap-3 shadow-xl transition-all"><DownloadCloud size={20} /> Master Export</button>
-                      <button onClick={() => importFileRef.current?.click()} className="px-8 py-5 bg-[#FDBB00] text-black rounded-2xl hover:scale-105 shadow-3xl text-[12px] font-black uppercase tracking-widest flex items-center gap-3 transition-all"><UploadCloud size={20} strokeWidth={3} /> Merge Records</button>
+          <div className="max-w-6xl mx-auto space-y-10 sm:space-y-12 animate-in fade-in slide-in-from-bottom-10 py-6 sm:py-10">
+             <div className="flex flex-col md:flex-row items-center justify-between border-b border-white/5 pb-8 sm:pb-12 gap-6 sm:gap-8 text-center md:text-left">
+               <div className="space-y-2 sm:space-y-3">
+                 <h3 className="text-4xl sm:text-7xl font-black italic tracking-tighter uppercase leading-none">Team <span className="text-[#FDBB00]">Scores</span></h3>
+                 <p className="text-[10px] sm:text-[14px] font-black text-white/20 uppercase tracking-[0.3em] sm:tracking-[0.5em]">Global Operational KPI Metrics</p>
+               </div>
+               <div className="flex items-center gap-6 sm:gap-8">
+                 <div className="text-right space-y-1">
+                   <p className="text-[10px] sm:text-[12px] font-black text-white/20 uppercase tracking-widest">Unified Performance</p>
+                   <p className="text-3xl sm:text-5xl font-black text-[#FDBB00] tracking-tighter leading-none shadow-glow">{history.length > 0 ? Math.round(history.reduce((a, b) => a + b.result.overallScore, 0) / history.length) : 0}%</p>
+                 </div>
+                 <BarChart3 className="text-[#FDBB00] shadow-glow size-12 sm:size-16" />
+               </div>
+             </div>
+             <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-white/10 rounded-3xl sm:rounded-[4rem] p-6 sm:p-12 shadow-3xl relative group overflow-hidden border-t-white/10">
+                <div className="absolute top-0 right-0 p-6 sm:p-10 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity duration-700"><Database className="size-32 sm:size-48" /></div>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8 sm:gap-10 relative z-10">
+                   <div className="space-y-4 text-center md:text-left">
+                     <div className="flex items-center gap-3 text-[#FDBB00] justify-center md:justify-start">
+                       <Database size={20} className="sm:size-24 shadow-glow" />
+                       <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter">Agency Sync Hub</h3>
+                     </div>
+                     <p className="text-white/40 max-w-md text-sm sm:text-[15px] leading-relaxed">Consolidate scoreboards from all systems. Export your local master vault or merge teammate data to build a truly global agency performance dashboard.</p>
+                   </div>
+                   <div className="flex flex-wrap gap-3 sm:gap-4 justify-center">
+                      <button onClick={exportTeamData} className="px-6 sm:px-8 py-4 sm:py-5 bg-white/5 hover:bg-white/10 rounded-xl sm:rounded-2xl text-[10px] sm:text-[12px] font-black uppercase tracking-widest border border-white/10 flex items-center gap-2 sm:gap-3 shadow-xl transition-all"><DownloadCloud size={18} /> Master Export</button>
+                      <button onClick={() => importFileRef.current?.click()} className="px-6 sm:px-8 py-4 sm:py-5 bg-[#FDBB00] text-black rounded-xl sm:rounded-2xl hover:scale-105 shadow-3xl text-[10px] sm:text-[12px] font-black uppercase tracking-widest flex items-center gap-2 sm:gap-3 transition-all"><UploadCloud size={18} strokeWidth={3} /> Merge Records</button>
                       <input type="file" ref={importFileRef} className="hidden" accept=".json" onChange={importTeamData} />
                    </div>
                 </div>
              </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
                 {teamStats.map(stat => (
-                   <div key={stat.name} className="bg-[#0f0f0f] border border-white/5 p-14 rounded-[5rem] relative overflow-hidden group hover:border-[#FDBB00]/40 transition-all border-t-white/10 shadow-3xl">
-                      <div className="flex items-center justify-between mb-16 relative z-10"><div className="w-24 h-24 rounded-[2rem] bg-white/5 flex items-center justify-center text-[#FDBB00] border border-white/5 group-hover:scale-110 shadow-2xl transition-all duration-700 shadow-glow"><UserCheck size={48} /></div><div className="text-right"><p className="text-[14px] font-black text-white/20 uppercase tracking-widest mb-1">Efficiency Rating</p><p className="text-6xl font-black text-white group-hover:text-[#FDBB00] transition-colors tracking-tighter leading-none">{stat.avgScore}%</p></div></div>
-                      <div className="relative z-10 space-y-3"><h4 className="text-5xl font-black text-white tracking-tighter">{stat.name}</h4><p className="text-[16px] font-bold text-white/30 uppercase tracking-[0.3em]">{stat.count} Audits Finalized</p></div>
-                      <div className="mt-14 h-3 w-full bg-white/5 rounded-full overflow-hidden relative z-10 shadow-inner"><div className="h-full bg-gradient-to-r from-[#FDBB00] to-orange-500 transition-all duration-1000 shadow-[0_0_20px_rgba(253,187,0,0.6)]" style={{ width: `${stat.avgScore}%` }} /></div>
+                   <div key={stat.name} className="bg-[#0f0f0f] border border-white/5 p-8 sm:p-14 rounded-[3rem] sm:rounded-[5rem] relative overflow-hidden group hover:border-[#FDBB00]/40 transition-all border-t-white/10 shadow-3xl">
+                      <div className="flex items-center justify-between mb-10 sm:mb-16 relative z-10">
+                        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl sm:rounded-[2rem] bg-white/5 flex items-center justify-center text-[#FDBB00] border border-white/5 group-hover:scale-110 shadow-2xl transition-all duration-700 shadow-glow">
+                          <UserCheck size={32} className="sm:size-48" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[11px] sm:text-[14px] font-black text-white/20 uppercase tracking-widest mb-1">Rating</p>
+                          <p className="text-4xl sm:text-6xl font-black text-white group-hover:text-[#FDBB00] transition-colors tracking-tighter leading-none">{stat.avgScore}%</p>
+                        </div>
+                      </div>
+                      <div className="relative z-10 space-y-2 sm:space-y-3">
+                        <h4 className="text-3xl sm:text-5xl font-black text-white tracking-tighter">{stat.name}</h4>
+                        <p className="text-[13px] sm:text-[16px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">{stat.count} Audits Finalized</p>
+                      </div>
+                      <div className="mt-10 sm:mt-14 h-2 sm:h-3 w-full bg-white/5 rounded-full overflow-hidden relative z-10 shadow-inner">
+                        <div className="h-full bg-gradient-to-r from-[#FDBB00] to-orange-500 transition-all duration-1000 shadow-[0_0_20px_rgba(253,187,0,0.6)]" style={{ width: `${stat.avgScore}%` }} />
+                      </div>
                    </div>
                 ))}
              </div>
