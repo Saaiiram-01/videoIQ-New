@@ -33,8 +33,15 @@ const Login: React.FC<{ onLoginSuccess: (user: any) => void }> = ({ onLoginSucce
       });
       
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Login failed');
+        const text = await response.text();
+        let errorMessage = 'Login failed';
+        try {
+          const data = JSON.parse(text);
+          errorMessage = data.error || errorMessage;
+        } catch (e) {
+          errorMessage = text.slice(0, 100) || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();

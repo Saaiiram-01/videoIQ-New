@@ -1,7 +1,4 @@
 import express from "express";
-import { createServer } from "http";
-import { WebSocketServer, WebSocket } from "ws";
-import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import cookieSession from "cookie-session";
@@ -12,8 +9,6 @@ const __dirname = path.dirname(__filename);
 const SESSION_SECRET = process.env.SESSION_SECRET || "videoiq-secret-session-key";
 
 export const app = express();
-let server: any = null;
-let wss: any = null;
 
 // Store recent activities in memory
 const activities: any[] = [];
@@ -22,14 +17,15 @@ export function setupMiddleware() {
   // Prevent duplicate middleware if called multiple times in serverless
   if ((app as any)._middlewareSetup) return;
   
+  app.set("trust proxy", 1);
   app.use(express.json());
   app.use(
     cookieSession({
       name: "session",
       keys: [SESSION_SECRET],
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      secure: true,
-      sameSite: "none",
+      secure: false, // Set to false for now to rule out SSL/Proxy issues
+      sameSite: "lax",
     })
   );
   (app as any)._middlewareSetup = true;
@@ -40,6 +36,10 @@ export function setupRoutes() {
   if ((app as any)._routesSetup) return;
 
   // Auth Routes
+  app.get("/api/test", (req, res) => {
+    res.json({ message: "API is working", env: process.env.NODE_ENV });
+  });
+
   app.post("/api/auth/login", (req, res) => {
     const { name, password } = req.body;
     if (!name) {
@@ -78,54 +78,7 @@ export function setupRoutes() {
 }
 
 export function setupWebSockets() {
-  if (!server) server = createServer(app);
-  if (!wss) wss = new WebSocketServer({ noServer: true });
-
-  server.on('upgrade', (request: any, socket: any, head: any) => {
-    const url = new URL(request.url || '', `http://${request.headers.host}`);
-    if (url.pathname === '/ws-api') {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('connection', ws, request);
-      });
-    }
-  });
-
-  wss.on("connection", (ws) => {
-    console.log("New client connected");
-    
-    // Send existing activities to new client
-    ws.send(JSON.stringify({ type: "INIT_ACTIVITIES", data: activities }));
-
-    ws.on("message", (message) => {
-      try {
-        const payload = JSON.parse(message.toString());
-        
-        if (payload.type === "NEW_ANALYSIS") {
-          const activity = {
-            id: Date.now(),
-            user: payload.user || "Anonymous",
-            score: payload.score,
-            context: payload.context,
-            verdict: payload.verdict,
-            timestamp: new Date().toISOString(),
-          };
-          
-          activities.unshift(activity);
-          if (activities.length > 50) activities.pop(); // Keep last 50
-
-          // Broadcast to all clients
-          const broadcastData = JSON.stringify({ type: "ACTIVITY_UPDATE", data: activity });
-          wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-              client.send(broadcastData);
-            }
-          });
-        }
-      } catch (err) {
-        console.error("Error processing message:", err);
-      }
-    });
-  });
+  // WebSocket logic is now in websocket.ts and only loaded when needed
 }
 
 async function startServer() {
@@ -133,9 +86,9 @@ async function startServer() {
 
   setupMiddleware();
   setupRoutes();
-  setupWebSockets();
 
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -147,6 +100,9 @@ async function startServer() {
       res.sendFile(path.join(__dirname, "dist", "index.html"));
     });
   }
+
+  const { setupWebSockets: realSetupWebSockets } = await import("./websocket.js");
+  const server = realSetupWebSockets(app, activities);
 
   server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://0.0.0.0:${PORT}`);
