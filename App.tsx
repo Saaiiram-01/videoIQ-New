@@ -1,9 +1,8 @@
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { 
-  Upload, Trophy, Target, ShieldAlert, ShieldCheck, Palette, Activity,
-  UserCheck, History as HistoryIcon, Clock, RefreshCcw, Cpu, Zap, AlertCircle, Play, Home, PlayCircle, Layers, Scissors, Split, X, TrendingUp, Users, BarChart3, FileVideo, ChevronRight, Info, CheckCircle2, AlertTriangle, BookOpen, Sparkles, ChevronDown, Download, Share2, Gauge, MousePointer2, Scan, ChevronLeft, EyeOff, Trash2, DownloadCloud, UploadCloud, Database, Link as LinkIcon, MessageSquare, Send, Rss, MessageSquareText, Star, Plus, ExternalLink, Headphones, Volume2, Waves,
-  Lock, User, Key, LogOut
+  Upload, Target, ShieldAlert, ShieldCheck, Activity,
+  UserCheck, History as HistoryIcon, Clock, RefreshCcw, Cpu, Zap, AlertCircle, Play, PlayCircle, Scissors, X, Users, BarChart3, FileVideo, ChevronRight, CheckCircle2, AlertTriangle, BookOpen, Sparkles, ChevronDown, Download, Gauge, Scan, EyeOff, Trash2, DownloadCloud, UploadCloud, Database, MessageSquare, Send, Rss, MessageSquareText, Star, Plus, ExternalLink, Volume2, Waves
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -15,140 +14,6 @@ const MASTER_VAULT_KEY = 'videoiq_master_persistent_vault_v1';
 const FEED_VAULT_KEY = 'videoiq_feed_vault_v1';
 const FEEDBACK_VAULT_KEY = 'videoiq_feedback_vault_v1';
 const LEGACY_VAULT_KEYS = ['videoiq_session_vault_v3', 'videoiq_session_vault', 'videoiq_history_v2'];
-
-const Login: React.FC<{ onLoginSuccess: (user: any) => void }> = ({ onLoginSuccess }) => {
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedName, setSelectedName] = useState<string>(TEAM_MEMBERS[0]);
-  const [password, setPassword] = useState<string>('');
-
-  const handleTeamLogin = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: selectedName, password: selectedName === 'Admin' ? password : null }),
-      });
-      
-      if (!response.ok) {
-        const text = await response.text();
-        let errorMessage = 'Login failed';
-        try {
-          const data = JSON.parse(text);
-          errorMessage = data.error || errorMessage;
-        } catch (e) {
-          errorMessage = text.slice(0, 100) || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
-      
-      const data = await response.json();
-      if (data.user) {
-        onLoginSuccess(data.user);
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#FDBB00] blur-[120px] rounded-full opacity-20 animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-white blur-[120px] rounded-full opacity-10" />
-      </div>
-
-      <div className="max-w-md w-full relative z-10">
-        <div className="bg-[#0f0f0f] border border-white/10 rounded-3xl sm:rounded-[3rem] p-6 sm:p-12 shadow-2xl space-y-8 sm:space-y-10">
-          <div className="text-center space-y-4">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#FDBB00] to-[#FF8A00] rounded-2xl sm:rounded-3xl mx-auto flex items-center justify-center shadow-2xl transform -rotate-12 group hover:rotate-0 transition-transform duration-500">
-              <ShieldCheck size={40} className="text-black sm:size-12" strokeWidth={2.5} />
-            </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase">Video<span className="text-[#FDBB00]">IQ</span></h1>
-            <p className="text-white/40 font-medium tracking-widest uppercase text-[8px] sm:text-[10px]">AI-Powered Creative Audit Engine</p>
-          </div>
-
-          <div className="space-y-6">
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-              <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest"><span className="bg-[#0f0f0f] px-4 text-white/20">Select Your Auditor Profile</span></div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="relative group">
-                <select 
-                  value={selectedName}
-                  onChange={(e) => setSelectedName(e.target.value)}
-                  disabled={isLoading}
-                  className="w-full bg-white/5 text-white h-16 rounded-2xl font-black uppercase tracking-widest text-xs border border-white/10 px-6 appearance-none focus:outline-none focus:border-[#FDBB00] transition-all cursor-pointer"
-                >
-                  {TEAM_MEMBERS.map((name) => (
-                    <option key={name} value={name} className="bg-[#0f0f0f] text-white">
-                      {name}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-white/20 group-hover:text-[#FDBB00] transition-colors">
-                  <ChevronDown size={20} />
-                </div>
-              </div>
-
-              {selectedName === 'Admin' && (
-                <div className="relative group animate-in slide-in-from-top-2 duration-300">
-                  <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#FDBB00] transition-colors">
-                    <Lock size={18} />
-                  </div>
-                  <input 
-                    type="password"
-                    placeholder="ADMIN ACCESS KEY"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    className="w-full bg-white/5 text-white h-16 rounded-2xl font-black uppercase tracking-widest text-xs border border-white/10 pl-14 pr-6 focus:outline-none focus:border-[#FDBB00] transition-all"
-                  />
-                </div>
-              )}
-
-              <button 
-                onClick={handleTeamLogin}
-                disabled={isLoading}
-                className="w-full bg-white text-black h-16 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:bg-[#FDBB00] transition-all active:scale-95 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <RefreshCcw className="animate-spin" size={20} />
-                ) : (
-                  <>
-                    <User size={18} />
-                    Login to Portal
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-3">
-              <AlertCircle className="text-red-400 shrink-0" size={18} />
-              <div className="space-y-1">
-                <p className="text-[11px] font-black text-red-400 uppercase tracking-widest">Login Error</p>
-                <p className="text-[10px] text-red-400/60 leading-relaxed">{error}</p>
-              </div>
-            </div>
-          )}
-
-          <div className="text-center">
-            <p className="text-[9px] text-white/20 font-medium uppercase tracking-[0.2em]">© 2026 VideoIQ Intelligence • Secure Audit Portal</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
   const radius = 65;
@@ -256,8 +121,6 @@ const MetricCard: React.FC<{ label: string; score: number; maxScore: number; ico
 };
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'audit' | 'archive' | 'team' | 'feed' | 'feedback' | 'guidelines'>('audit');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isChatting, setIsChatting] = useState<{ [key: number]: boolean }>({});
@@ -286,29 +149,6 @@ const App: React.FC = () => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const importFileRef = useRef<HTMLInputElement>(null);
-
-  const checkAuth = async () => {
-    try {
-      const res = await fetch('/api/auth/me');
-      const data = await res.json();
-      if (data.user) {
-        setUser(data.user);
-        setIsAuthenticated(true);
-      }
-    } catch (err) {
-      console.error('Auth check failed', err);
-    }
-  };
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setIsAuthenticated(false);
-    setUser(null);
-  };
 
   useEffect(() => {
     // WebSocket Setup with Reconnection Logic
@@ -470,7 +310,7 @@ const App: React.FC = () => {
       if (socketRef.current?.readyState === WebSocket.OPEN) {
         socketRef.current.send(JSON.stringify({
           type: "NEW_ANALYSIS",
-          user: user?.name || selectedAuditor,
+          user: selectedAuditor,
           score: result.overallScore,
           verdict: result.verdict,
           context: mainFile.name
@@ -483,7 +323,7 @@ const App: React.FC = () => {
         id: auditId,
         date: new Date().toISOString(),
         fileName: mainFile.name,
-        auditorName: user?.name || selectedAuditor,
+        auditorName: selectedAuditor,
         result: result
       }, ...prev]);
     } catch (e) {
@@ -822,13 +662,6 @@ const App: React.FC = () => {
     }
   };
 
-  if (!isAuthenticated) {
-    return <Login onLoginSuccess={(user) => {
-      setUser(user);
-      setIsAuthenticated(true);
-    }} />;
-  }
-
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#FDBB00] selection:text-black antialiased">
       <header className="sticky top-0 z-[60] bg-black/80 backdrop-blur-2xl border-b border-white/5 h-16 sm:h-20 px-4 sm:px-8 flex items-center shadow-2xl overflow-x-auto no-scrollbar">
@@ -865,26 +698,13 @@ const App: React.FC = () => {
             <div className="hidden lg:block text-right">
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Active Auditor</p>
               <div className="flex items-center justify-end gap-2">
-                {user?.role === 'admin' && (
-                  <span className="px-2 py-0.5 bg-[#FDBB00] text-black text-[9px] font-black uppercase rounded-md tracking-tighter">Admin</span>
-                )}
-                <p className="text-[13px] font-black text-white/80 tracking-tight">{user?.name || selectedAuditor}</p>
+                <p className="text-[13px] font-black text-white/80 tracking-tight">{selectedAuditor}</p>
               </div>
             </div>
             <div className="relative group">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FDBB00]/10 to-orange-500/10 border border-[#FDBB00]/30 flex items-center justify-center text-[#FDBB00] shadow-glow overflow-hidden">
-                {user?.picture ? (
-                  <img src={user.picture} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                ) : (
-                  <UserCheck size={20} />
-                )}
+                <UserCheck size={20} />
               </div>
-              <button 
-                onClick={handleLogout}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-lg flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-              >
-                <LogOut size={10} className="text-white" />
-              </button>
             </div>
           </div>
         </div>
