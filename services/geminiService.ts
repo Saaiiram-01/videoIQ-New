@@ -87,7 +87,7 @@ export const analyzeVideoFrames = async (
   }
 
   const prompt = `You are a world-class Creative Director and Lead Video Auditor at a top-tier global ad agency. 
-    Your mission: Provide a brutal, high-level creative audit of this Real Estate video ad based on the "Real Estate Video Ad — Quality Control Checklist v2.0" and the "Scoring Schema v1.0".
+    Your mission: Provide a brutal, high-level creative audit of this ${videoType} video asset based on the industry-standard quality control checklists and scoring schemas.
 
     SCORING WEIGHTS (Deductions from 100):
     - Critical Failure: -10 points
@@ -111,11 +111,11 @@ export const analyzeVideoFrames = async (
     - NEEDS_REVIEW: "Passes critical checks but has quality gaps. Fix flagged items before publishing."
     - FAIL: "Critical issues found. All critical failures must be resolved before resubmission."
 
-    Analyze the video across these 6 critical sections:
+    Analyze the video across these 6 critical sections, adapting your criteria for the ${videoType} format:
     S01: HOOK — FIRST 3 SECONDS (Max 47 pts)
     S02: MOTION GRAPHICS QUALITY (Max 68 pts)
     S03: VISUAL & TECHNICAL QUALITY (Max 52 pts)
-    S04: MESSAGING & REAL ESTATE BEST PRACTICES (Max 58 pts)
+    S04: MESSAGING & CONTENT BEST PRACTICES (Max 58 pts)
     S05: AUDIO QUALITY & CAPTIONS (Max 38 pts)
     S06: PLATFORM POLICY & PERFORMANCE (Max 57 pts)
 

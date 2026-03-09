@@ -16,23 +16,23 @@ const FEEDBACK_VAULT_KEY = 'videoiq_feedback_vault_v1';
 const LEGACY_VAULT_KEYS = ['videoiq_session_vault_v3', 'videoiq_session_vault', 'videoiq_history_v2'];
 
 const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
-  const radius = 65;
-  const strokeWidth = 14;
-  const dimension = 160;
+  const radius = 60;
+  const strokeWidth = 10;
+  const dimension = 140;
   const center = dimension / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
   const color = score >= 85 ? '#22c55e' : score >= 70 ? '#fdbb00' : '#ef4444';
 
   return (
-    <div className="relative flex items-center justify-center w-32 h-32 sm:w-44 sm:h-44 drop-shadow-[0_0_20px_rgba(0,0,0,0.6)]">
+    <div className="relative flex items-center justify-center w-28 h-28 sm:w-36 sm:h-36">
       <svg width="100%" height="100%" viewBox={`0 0 ${dimension} ${dimension}`} className="transform -rotate-90">
-        <circle cx={center} cy={center} r={radius} stroke="rgba(255,255,255,0.03)" strokeWidth={strokeWidth} fill="transparent" />
-        <circle cx={center} cy={center} r={radius} stroke={color} strokeWidth={strokeWidth} fill="transparent" strokeDasharray={circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 2s cubic-bezier(0.34, 1.56, 0.64, 1)' }} strokeLinecap="round" />
+        <circle cx={center} cy={center} r={radius} stroke="rgba(255,255,255,0.05)" strokeWidth={strokeWidth} fill="transparent" />
+        <circle cx={center} cy={center} r={radius} stroke={color} strokeWidth={strokeWidth} fill="transparent" strokeDasharray={circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 1.5s ease-out' }} strokeLinecap="round" />
       </svg>
       <div className="absolute flex flex-col items-center justify-center text-center">
-        <span className="text-2xl sm:text-4xl font-black text-white leading-none">{score}%</span>
-        <span className="text-[8px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1">Quality</span>
+        <span className="text-xl sm:text-3xl font-bold text-white tabular-nums">{score}%</span>
+        <span className="text-[8px] font-medium text-zinc-500 uppercase tracking-widest mt-0.5">Quality</span>
       </div>
     </div>
   );
@@ -40,55 +40,48 @@ const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
 
 const LiveActivityFeed: React.FC<{ activities: any[] }> = ({ activities }) => {
   return (
-    <div className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[3.5rem] p-6 sm:p-10 space-y-6 sm:space-y-8 shadow-2xl relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-6 sm:p-10 opacity-[0.03] rotate-12"><Rss className="size-16 sm:size-32" /></div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-        <div className="flex items-center gap-3 sm:gap-4 text-[#FDBB00]">
-          <div className="relative">
-            <div className="absolute inset-0 bg-[#FDBB00] rounded-full animate-ping opacity-20" />
-            <Activity size={24} className="sm:size-28 relative z-10" />
-          </div>
-          <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter italic">Live <span className="text-white">Team Activity</span></h3>
+    <div className="bg-zinc-900/40 border border-white/5 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+      <div className="flex items-center justify-between mb-8 relative z-10">
+        <div className="flex items-center gap-3 text-[#FDBB00]">
+          <Activity size={20} />
+          <h3 className="text-lg font-bold uppercase tracking-tight">Live <span className="text-white">Activity</span></h3>
         </div>
-        <span className="self-start sm:self-auto px-4 sm:px-6 py-1.5 sm:py-2 bg-white/5 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-white/30 border border-white/5">Real-time Sync</span>
+        <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-widest text-zinc-500 border border-white/5">Sync Active</span>
       </div>
 
-      <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2 sm:pr-4 relative z-10">
+      <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2 relative z-10">
         {activities.length === 0 ? (
-          <div className="py-12 sm:py-20 text-center space-y-4 opacity-20 italic">
-            <Users size={40} className="sm:size-48 mx-auto" strokeWidth={1} />
-            <p className="font-black uppercase tracking-[0.3em] text-xs sm:text-sm">Waiting for team activity...</p>
+          <div className="py-12 text-center opacity-20 italic">
+            <p className="text-xs font-medium uppercase tracking-widest">No recent activity</p>
           </div>
         ) : (
           activities.map((activity) => (
-            <div key={activity.id} className="bg-white/[0.02] border border-white/5 p-4 sm:p-6 rounded-2xl sm:rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.04] transition-all group/item shadow-lg">
-              <div className="flex items-center gap-4 sm:gap-6">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center border border-white/10 shadow-inner group-hover/item:scale-110 transition-transform">
-                  <UserCheck size={20} className="sm:size-24 text-[#FDBB00]" />
+            <div key={activity.id} className="bg-zinc-800/30 border border-white/5 p-4 rounded-2xl flex items-center justify-between gap-4 hover:bg-zinc-800/50 transition-all group shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center border border-white/5">
+                  <UserCheck size={16} className="text-[#FDBB00]" />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <span className="text-base sm:text-lg font-black text-white italic">{activity.user}</span>
-                    <span className="text-[8px] sm:text-[10px] font-black uppercase px-2 sm:px-3 py-0.5 sm:py-1 bg-white/5 rounded-lg text-white/30 tracking-widest">Auditor</span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-white">{activity.user}</span>
                   </div>
-                  <p className="text-[11px] sm:text-[13px] font-medium text-white/40 italic flex items-center gap-2">
-                    <FileVideo size={12} className="sm:size-14" /> {activity.context}
+                  <p className="text-[11px] font-medium text-zinc-500 flex items-center gap-1.5">
+                    <FileVideo size={10} /> {activity.context}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center justify-between md:justify-end gap-6 sm:gap-8">
-                <div className="text-right space-y-1">
-                   <div className={`text-xl sm:text-2xl font-black italic ${activity.score >= 85 ? 'text-green-400' : activity.score >= 70 ? 'text-[#FDBB00]' : 'text-red-400'}`}>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                   <div className={`text-sm font-bold ${activity.score >= 85 ? 'text-green-400' : activity.score >= 70 ? 'text-[#FDBB00]' : 'text-red-400'}`}>
                      {activity.score}%
                    </div>
-                   <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-white/20">Audit Score</div>
                 </div>
-                <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest border ${
+                <div className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border ${
                   activity.verdict === 'PASS' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 
                   activity.verdict === 'NEEDS_REVIEW' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
                   'bg-red-500/10 border-red-500/20 text-red-400'
                 }`}>
-                  {activity.verdict === 'PASS' ? 'Approved' : activity.verdict === 'NEEDS_REVIEW' ? 'Needs Review' : 'Rejected'}
+                  {activity.verdict === 'PASS' ? 'Approved' : activity.verdict === 'NEEDS_REVIEW' ? 'Review' : 'Fail'}
                 </div>
               </div>
             </div>
@@ -105,15 +98,17 @@ const MetricCard: React.FC<{ label: string; score: number; maxScore: number; ico
   const isMid = percentage >= 60;
   
   return (
-    <div className="bg-[#111]/80 backdrop-blur-md border border-white/5 p-4 sm:p-5 rounded-2xl sm:rounded-3xl hover:bg-white/[0.05] transition-all group border-t-white/10 shadow-lg">
-      <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <div className="p-2 sm:p-2.5 bg-white/5 rounded-lg sm:rounded-xl text-white/40 group-hover:text-[#FDBB00] transition-colors">{React.cloneElement(icon as React.ReactElement, { size: 18 })}</div>
-        <span className={`text-[12px] sm:text-[14px] font-black ${isHigh ? 'text-green-400' : isMid ? 'text-yellow-400' : 'text-red-400'}`}>
-          {score.toFixed(0)}/{maxScore}
+    <div className="bg-zinc-900/40 border border-white/5 p-4 rounded-2xl hover:bg-zinc-800/40 transition-colors group">
+      <div className="flex items-center justify-between mb-3">
+        <div className="p-2 bg-zinc-800 rounded-lg text-zinc-400 group-hover:text-[#FDBB00] transition-colors">
+          {React.cloneElement(icon as React.ReactElement, { size: 16 })}
+        </div>
+        <span className={`text-xs font-mono font-bold ${isHigh ? 'text-green-400' : isMid ? 'text-yellow-400' : 'text-red-400'}`}>
+          {score.toFixed(0)}<span className="text-zinc-600">/</span>{maxScore}
         </span>
       </div>
-      <p className="text-[9px] sm:text-[11px] font-black text-white/30 uppercase tracking-widest">{label}</p>
-      <div className="mt-2 sm:mt-3 h-1 sm:h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{label}</p>
+      <div className="mt-2 h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
         <div className={`h-full transition-all duration-1000 ${isHigh ? 'bg-green-500' : isMid ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${percentage}%` }} />
       </div>
     </div>
@@ -663,47 +658,47 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#FDBB00] selection:text-black antialiased">
-      <header className="sticky top-0 z-[60] bg-black/80 backdrop-blur-2xl border-b border-white/5 h-16 sm:h-20 px-4 sm:px-8 flex items-center shadow-2xl overflow-x-auto no-scrollbar">
-        <div className="max-w-[1700px] w-full mx-auto flex items-center justify-between gap-4 sm:gap-10">
-          <div className="flex items-center gap-4 sm:gap-8 shrink-0">
-            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group" onClick={() => { setAnalysisResult(null); setActiveTab('audit'); }}>
-              <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-tr from-[#FDBB00] to-orange-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform"><Scan size={18} className="text-black sm:size-24" strokeWidth={3} /></div>
-              <h1 className="text-lg sm:text-2xl font-black italic tracking-tighter uppercase">VIDEO<span className="text-[#FDBB00]">IQ</span></h1>
+    <div className="min-h-screen bg-[#080808] text-zinc-100 font-sans selection:bg-[#FDBB00] selection:text-black antialiased">
+      <header className="sticky top-0 z-[60] bg-[#080808]/80 backdrop-blur-xl border-b border-white/5 h-16 px-4 sm:px-8 flex items-center shadow-sm">
+        <div className="max-w-[1700px] w-full mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-8 shrink-0">
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => { setAnalysisResult(null); setActiveTab('audit'); }}>
+              <div className="w-8 h-8 bg-[#FDBB00] rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <Scan size={16} className="text-black" strokeWidth={2.5} />
+              </div>
+              <h1 className="text-xl font-bold tracking-tight uppercase">VIDEO<span className="text-[#FDBB00]">IQ</span></h1>
             </div>
-            <nav className="flex items-center gap-1 bg-[#0a0a0a] p-1 rounded-[2rem] border border-white/10 shadow-inner overflow-x-auto no-scrollbar">
-              <button onClick={() => setActiveTab('audit')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'audit' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Scan size={12} /> Audit</button>
-              <button onClick={() => setActiveTab('guidelines')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'guidelines' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><BookOpen size={12} /> Guidelines</button>
-              <button onClick={() => setActiveTab('archive')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'archive' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><HistoryIcon size={12} /> Archive</button>
-              <button onClick={() => setActiveTab('feed')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'feed' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Rss size={12} /> Feed</button>
-              <button onClick={() => setActiveTab('team')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'team' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><Users size={12} /> Team</button>
-              <button onClick={() => setActiveTab('feedback')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-[1.8rem] text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${activeTab === 'feedback' ? 'bg-[#FDBB00] text-black shadow-xl scale-[1.05]' : 'text-white/40 hover:text-white'}`}><MessageSquareText size={12} /> Feedback</button>
+            <nav className="hidden md:flex items-center gap-1 bg-zinc-900/50 p-1 rounded-full border border-white/5">
+              <button onClick={() => setActiveTab('audit')} className={`px-5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'audit' ? 'bg-[#FDBB00] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}>Audit</button>
+              <button onClick={() => setActiveTab('guidelines')} className={`px-5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'guidelines' ? 'bg-[#FDBB00] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}>Guidelines</button>
+              <button onClick={() => setActiveTab('archive')} className={`px-5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'archive' ? 'bg-[#FDBB00] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}>Archive</button>
+              <button onClick={() => setActiveTab('feed')} className={`px-5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'feed' ? 'bg-[#FDBB00] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}>Feed</button>
+              <button onClick={() => setActiveTab('team')} className={`px-5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'team' ? 'bg-[#FDBB00] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}>Team</button>
+              <button onClick={() => setActiveTab('feedback')} className={`px-5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${activeTab === 'feedback' ? 'bg-[#FDBB00] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}>Feedback</button>
             </nav>
           </div>
-          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
-            <div className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-all ${
-              wsStatus === 'connected' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
-              wsStatus === 'connecting' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
-              'bg-red-500/10 border-red-500/20 text-red-400'
+          <div className="flex items-center gap-6 shrink-0">
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all ${
+              wsStatus === 'connected' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
+              wsStatus === 'connecting' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' :
+              'bg-red-500/10 border-red-500/20 text-red-500'
             }`}>
-              <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
+              <div className={`w-1.5 h-1.5 rounded-full ${
                 wsStatus === 'connected' ? 'bg-green-500 animate-pulse' :
                 wsStatus === 'connecting' ? 'bg-yellow-500 animate-bounce' :
                 'bg-red-500'
               }`} />
-              <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
+              <span className="text-[10px] font-bold uppercase tracking-widest">
                 {wsStatus === 'connected' ? 'Live' : wsStatus === 'connecting' ? 'Wait' : 'Offline'}
               </span>
             </div>
-            <div className="hidden lg:block text-right">
-              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Active Auditor</p>
-              <div className="flex items-center justify-end gap-2">
-                <p className="text-[13px] font-black text-white/80 tracking-tight">{selectedAuditor}</p>
+            <div className="hidden sm:flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Auditor</p>
+                <p className="text-xs font-bold text-zinc-300">{selectedAuditor}</p>
               </div>
-            </div>
-            <div className="relative group">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FDBB00]/10 to-orange-500/10 border border-[#FDBB00]/30 flex items-center justify-center text-[#FDBB00] shadow-glow overflow-hidden">
-                <UserCheck size={20} />
+              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-zinc-400">
+                <UserCheck size={16} />
               </div>
             </div>
           </div>
@@ -714,109 +709,118 @@ const App: React.FC = () => {
         {activeTab === 'audit' && (
           isAnalyzing ? (
             <div className="py-44 flex flex-col items-center justify-center space-y-12 animate-in fade-in duration-700">
-               <div className="relative"><div className="w-56 h-56 rounded-full border border-white/5 flex items-center justify-center bg-white/[0.01] shadow-[0_0_80px_rgba(253,187,0,0.1)]"><div className="w-40 h-40 rounded-full border-4 border-t-[#FDBB00] border-r-transparent border-b-transparent border-l-transparent animate-spin" /></div><div className="absolute inset-0 flex items-center justify-center"><Cpu className="text-[#FDBB00] animate-pulse" size={56} /></div></div>
-               <div className="text-center space-y-6"><h2 className="text-5xl font-black tracking-tighter italic uppercase">Initializing <span className="text-[#FDBB00]">Video Review Core</span></h2><p className="text-[14px] text-white/30 font-mono tracking-[0.6em] uppercase animate-pulse">{loadingText}</p></div>
+               <div className="relative">
+                 <div className="w-48 h-48 rounded-full border border-white/5 flex items-center justify-center bg-zinc-900/30 shadow-2xl">
+                   <div className="w-32 h-32 rounded-full border-2 border-t-[#FDBB00] border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+                 </div>
+                 <div className="absolute inset-0 flex items-center justify-center">
+                   <Cpu className="text-[#FDBB00] animate-pulse" size={40} />
+                 </div>
+               </div>
+               <div className="text-center space-y-4">
+                 <h2 className="text-4xl font-bold tracking-tight uppercase">Analyzing <span className="text-[#FDBB00]">Video Assets</span></h2>
+                 <p className="text-xs text-zinc-500 font-mono tracking-[0.4em] uppercase animate-pulse">{loadingText}</p>
+               </div>
             </div>
           ) : analysisResult ? (
-            <div className="space-y-6 sm:space-y-10 animate-in fade-in duration-700">
-              <div className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[4rem] p-6 sm:p-12 flex flex-col xl:flex-row items-center justify-between gap-8 sm:gap-12 shadow-3xl border-t-white/10">
-                 <div className="flex flex-col md:flex-row items-center gap-8 sm:gap-16">
+            <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-700">
+              <div className="bg-zinc-900/60 border border-white/5 rounded-3xl p-6 sm:p-10 flex flex-col xl:flex-row items-center justify-between gap-8 shadow-2xl">
+                 <div className="flex flex-col md:flex-row items-center gap-8 sm:gap-12">
                     <ScoreRing score={analysisResult.overall_score} />
-                    <div className="space-y-4 sm:space-y-6 text-center md:text-left">
-                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 justify-center md:justify-start">
-                        <span className={`px-6 sm:px-10 py-2 sm:py-3.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] font-black uppercase tracking-widest border-2 ${
+                    <div className="space-y-4 text-center md:text-left">
+                      <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start">
+                        <span className={`px-5 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest border ${
                           analysisResult.verdict === 'PASS' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 
                           analysisResult.verdict === 'NEEDS_REVIEW' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
                           'bg-red-500/10 border-red-500/20 text-red-400'
                         }`}>{analysisResult.verdict === 'PASS' ? 'Approved' : analysisResult.verdict === 'NEEDS_REVIEW' ? 'Needs Review' : 'Rejected'}</span>
                         {analysisResult.resubmission_required && (
-                          <span className="px-4 sm:px-6 py-2 sm:py-3.5 rounded-xl sm:rounded-2xl bg-red-500/10 border border-red-500/20 text-[9px] sm:text-[11px] font-black text-red-400 uppercase tracking-widest">Resubmission Required</span>
+                          <span className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-[10px] font-bold text-red-400 uppercase tracking-widest">Resubmission Required</span>
                         )}
-                        <span className="px-4 sm:px-6 py-2 sm:py-3.5 rounded-xl sm:rounded-2xl bg-white/5 border border-white/5 text-[9px] sm:text-[11px] font-black text-white/40 uppercase tracking-widest">{selectedType}</span>
+                        <span className="px-4 py-2 rounded-xl bg-zinc-800 border border-white/5 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{selectedType}</span>
                         <div className="flex items-center gap-4 md:ml-4">
                           <div className="flex flex-col">
-                            <span className="text-[8px] sm:text-[10px] font-black uppercase text-white/20 tracking-widest">Points</span>
-                            <span className="text-lg sm:text-xl font-black text-white">{analysisResult.points_earned}<span className="text-white/20">/{analysisResult.points_possible}</span></span>
+                            <span className="text-[9px] font-bold uppercase text-zinc-600 tracking-widest">Points</span>
+                            <span className="text-lg font-bold text-white tabular-nums">{analysisResult.points_earned}<span className="text-zinc-600">/{analysisResult.points_possible}</span></span>
                           </div>
                           {analysisResult.critical_failures > 0 && (
                             <div className="flex flex-col">
-                              <span className="text-[8px] sm:text-[10px] font-black uppercase text-red-500/40 tracking-widest">Critical</span>
-                              <span className="text-lg sm:text-xl font-black text-red-500">{analysisResult.critical_failures}</span>
+                              <span className="text-[9px] font-bold uppercase text-red-500/40 tracking-widest">Critical</span>
+                              <span className="text-lg font-bold text-red-500 tabular-nums">{analysisResult.critical_failures}</span>
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <h2 className="text-3xl sm:text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-none">Analysis <span className="text-[#FDBB00]">Complete</span></h2>
-                        <p className="text-white/40 text-xs sm:text-sm font-medium italic">{analysisResult.verdict_message}</p>
+                      <div className="space-y-1">
+                        <h2 className="text-3xl sm:text-5xl font-black tracking-tight uppercase leading-none">Analysis <span className="text-[#FDBB00]">Complete</span></h2>
+                        <p className="text-zinc-500 text-sm font-medium">{analysisResult.verdict_message}</p>
                       </div>
                     </div>
                  </div>
-                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full xl:w-auto">
-                   <button onClick={() => { setAnalysisResult(null); setMainFile(null); }} className="px-6 sm:px-10 py-4 sm:py-6 bg-white/5 hover:bg-white/10 rounded-xl sm:rounded-2xl text-[12px] sm:text-[14px] font-black uppercase tracking-widest border border-white/5 flex items-center justify-center gap-3 transition-all"><RefreshCcw size={18} /> New Audit</button>
-                   <button onClick={downloadReport} className="px-6 sm:px-10 py-4 sm:py-6 bg-[#FDBB00] text-black rounded-xl sm:rounded-2xl hover:scale-105 transition-all shadow-3xl text-[12px] sm:text-[14px] font-black uppercase tracking-widest flex items-center justify-center gap-3"><Download size={18} strokeWidth={3} /> Save Report</button>
+                 <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
+                   <button onClick={() => { setAnalysisResult(null); setMainFile(null); }} className="px-6 py-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-xs font-bold uppercase tracking-widest border border-white/5 flex items-center justify-center gap-2 transition-all"><RefreshCcw size={16} /> New Audit</button>
+                   <button onClick={downloadReport} className="px-8 py-4 bg-[#FDBB00] text-black rounded-xl hover:bg-[#ffc933] transition-all shadow-lg text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2"><Download size={16} strokeWidth={2.5} /> Save Report</button>
                  </div>
               </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 sm:gap-10">
-                <div className="xl:col-span-8 space-y-6 sm:space-y-10">
-                  <div className="bg-black rounded-3xl sm:rounded-[4rem] overflow-hidden border border-white/5 aspect-video shadow-2xl relative ring-4 sm:ring-[12px] ring-[#111]">
-                    {mainVideoUrl ? <video ref={videoRef} src={mainVideoUrl} controls className="w-full h-full object-contain" /> : <div className="w-full h-full flex flex-col items-center justify-center bg-[#0a0a0a] text-white/5 italic"><PlayCircle className="size-16 sm:size-32" strokeWidth={0.5} /><p className="mt-4 font-black uppercase tracking-[0.5em] text-[10px] sm:text-base">Playback Stream Unlinked</p></div>}
+              <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                <div className="xl:col-span-8 space-y-8">
+                  <div className="bg-black rounded-3xl overflow-hidden border border-white/5 aspect-video shadow-2xl relative ring-1 ring-white/10">
+                    {mainVideoUrl ? <video ref={videoRef} src={mainVideoUrl} controls className="w-full h-full object-contain" /> : <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 text-zinc-800 italic"><PlayCircle className="size-20" strokeWidth={0.5} /><p className="mt-4 font-bold uppercase tracking-widest text-xs">Playback Stream Unlinked</p></div>}
                   </div>
 
-                  <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                    <MetricCard label="Hook Performance" score={analysisResult.hook_performance.score} maxScore={47} icon={<Scissors size={20} />} />
-                    <MetricCard label="Motion Graphics" score={analysisResult.motion_graphics.score} maxScore={68} icon={<Target size={20} />} />
-                    <MetricCard label="Visual & Technical" score={analysisResult.visual_technical.score} maxScore={52} icon={<ShieldAlert size={20} />} />
-                    <MetricCard label="Messaging & Copy" score={analysisResult.messaging_copy.score} maxScore={58} icon={<ShieldCheck size={20} />} />
-                    <MetricCard label="Audio & Captions" score={analysisResult.audio_captions.score} maxScore={38} icon={<Volume2 size={20} />} />
-                    <MetricCard label="Platform Policy" score={analysisResult.platform_policy.score} maxScore={57} icon={<Gauge size={20} />} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <MetricCard label="Hook Performance" score={analysisResult.hook_performance.score} maxScore={47} icon={<Scissors size={18} />} />
+                    <MetricCard label="Motion Graphics" score={analysisResult.motion_graphics.score} maxScore={68} icon={<Target size={18} />} />
+                    <MetricCard label="Visual & Technical" score={analysisResult.visual_technical.score} maxScore={52} icon={<ShieldAlert size={18} />} />
+                    <MetricCard label="Messaging & Copy" score={analysisResult.messaging_copy.score} maxScore={58} icon={<ShieldCheck size={18} />} />
+                    <MetricCard label="Audio & Captions" score={analysisResult.audio_captions.score} maxScore={38} icon={<Volume2 size={18} />} />
+                    <MetricCard label="Platform Policy" score={analysisResult.platform_policy.score} maxScore={57} icon={<Gauge size={18} />} />
                   </div>
 
-                  <div className="bg-[#0f0f0f] border border-white/5 p-6 sm:p-12 rounded-3xl sm:rounded-[3.5rem] space-y-4 sm:space-y-6 shadow-2xl group relative overflow-hidden">
-                     <div className="absolute top-0 right-0 p-6 sm:p-10 opacity-[0.03] rotate-12"><BookOpen className="size-16 sm:size-32" /></div>
-                     <div className="flex items-center gap-3 sm:gap-4 text-[#FDBB00] mb-2"><Waves size={24} className="sm:size-28" /><h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter italic">Technical Narrative</h3></div>
-                     <p className="text-white/70 text-base sm:text-[20px] leading-relaxed font-medium italic relative z-10">"{analysisResult.overall_summary}"</p>
+                  <div className="bg-zinc-900/40 border border-white/5 p-8 rounded-3xl space-y-4 shadow-xl relative overflow-hidden">
+                     <div className="flex items-center gap-3 text-[#FDBB00] mb-2"><Waves size={20} /><h3 className="text-lg font-bold uppercase tracking-tight">Technical Narrative</h3></div>
+                     <p className="text-zinc-300 text-lg leading-relaxed font-medium italic relative z-10">"{analysisResult.overall_summary}"</p>
                   </div>
                 </div>
 
-                <div className="xl:col-span-4 space-y-6 sm:space-y-10">
-                  <div className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[4rem] h-full flex flex-col overflow-hidden shadow-2xl border-t-[#FDBB00]/20 min-h-[500px] xl:min-h-[900px]">
-                    <div className="p-6 sm:p-10 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
-                      <div className="flex items-center gap-3 sm:gap-4"><Clock size={24} className="sm:size-28 text-[#FDBB00]" /><h3 className="text-xl sm:text-2xl font-black italic tracking-tighter uppercase">Audit <span className="text-[#FDBB00]">Markers</span></h3></div>
+                <div className="xl:col-span-4 space-y-8">
+                  <div className="bg-zinc-900/40 border border-white/5 rounded-3xl h-full flex flex-col overflow-hidden shadow-xl min-h-[600px] xl:min-h-[800px]">
+                    <div className="p-6 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
+                      <div className="flex items-center gap-3"><Clock size={20} className="text-[#FDBB00]" /><h3 className="text-lg font-bold tracking-tight uppercase">Audit <span className="text-[#FDBB00]">Markers</span></h3></div>
                     </div>
                     
-                    <div className="flex-1 overflow-y-auto p-4 sm:p-10 space-y-6 sm:space-y-10 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                       {analysisResult.timestamped_betterment.map((marker, i) => (
-                        <div key={i} className={`bg-white/[0.02] border p-4 sm:p-8 rounded-2xl sm:rounded-[3rem] transition-all flex flex-col gap-4 sm:gap-6 shadow-inner ${marker.isIgnored ? 'opacity-40 grayscale' : ''} ${activeCommentMarker === i ? 'border-[#FDBB00]/50 bg-[#FDBB00]/5' : 'border-white/5 hover:border-[#FDBB00]/30'}`}>
+                        <div key={i} className={`bg-zinc-800/30 border p-6 rounded-2xl transition-all flex flex-col gap-4 shadow-sm ${marker.isIgnored ? 'opacity-40 grayscale' : ''} ${activeCommentMarker === i ? 'border-[#FDBB00]/50 bg-[#FDBB00]/5' : 'border-white/5 hover:border-white/10'}`}>
                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                                <span className="text-[12px] sm:text-[14px] font-black text-[#FDBB00] bg-[#FDBB00]/10 px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-xl sm:rounded-2xl border border-[#FDBB00]/20 font-mono shadow-md">{marker.timestamp}</span>
-                                 <span className={`px-3 sm:px-4 py-1 sm:py-2 rounded-lg sm:rounded-xl text-[8px] sm:text-[10px] font-black uppercase tracking-widest border ${
+                              <div className="flex flex-wrap items-center gap-3">
+                                <span className="text-xs font-mono font-bold text-[#FDBB00] bg-[#FDBB00]/10 px-3 py-1.5 rounded-lg border border-[#FDBB00]/20">{marker.timestamp}</span>
+                                 <span className={`px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest border ${
                                    marker.isIgnored ? 'bg-white/10 border-white/20 text-white/40' :
-                                   marker.severity === 'Critical' ? 'bg-red-600 border-red-700 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]' :
+                                   marker.severity === 'Critical' ? 'bg-red-600 border-red-700 text-white' :
                                    marker.severity === 'High' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
                                    marker.severity === 'Medium' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
                                    'bg-blue-500/10 border-blue-500/20 text-blue-400'
                                  }`}>
                                    {marker.isIgnored ? 'Ignored' : marker.severity}
                                  </span>
-                                {mainVideoUrl && <button onClick={() => seekToTimestamp(marker.timestamp)} className="w-10 h-10 sm:w-12 sm:h-12 bg-[#FDBB00]/10 hover:bg-[#FDBB00] hover:text-black rounded-lg sm:rounded-xl flex items-center justify-center transition-all shadow-xl group/play"><Play size={16} fill="currentColor" /></button>}
+                                {mainVideoUrl && <button onClick={() => seekToTimestamp(marker.timestamp)} className="w-8 h-8 bg-zinc-800 hover:bg-[#FDBB00] hover:text-black rounded-lg flex items-center justify-center transition-all shadow-md"><Play size={12} fill="currentColor" /></button>}
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                <button onClick={() => toggleMarkerIgnored(i)} className={`p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all ${marker.isIgnored ? 'bg-green-500 text-white' : 'bg-white/5 text-white/40 hover:text-white'}`} title={marker.isIgnored ? "Restore Marker" : "Ignore Marker"}>
-                                  {marker.isIgnored ? <CheckCircle2 size={18} /> : <EyeOff size={18} />}
+                                <button onClick={() => toggleMarkerIgnored(i)} className={`p-2 rounded-lg transition-all ${marker.isIgnored ? 'bg-green-500 text-white' : 'bg-white/5 text-zinc-500 hover:text-white'}`} title={marker.isIgnored ? "Restore Marker" : "Ignore Marker"}>
+                                  {marker.isIgnored ? <CheckCircle2 size={16} /> : <EyeOff size={16} />}
                                 </button>
-                                <button onClick={() => setActiveCommentMarker(activeCommentMarker === i ? null : i)} className={`p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all ${activeCommentMarker === i ? 'bg-[#FDBB00] text-black' : 'bg-white/5 text-white/40 hover:text-white'}`} title="Discuss with AI">
-                                  <MessageSquare size={18} />
+                                <button onClick={() => setActiveCommentMarker(activeCommentMarker === i ? null : i)} className={`p-2 rounded-lg transition-all ${activeCommentMarker === i ? 'bg-[#FDBB00] text-black' : 'bg-white/5 text-zinc-500 hover:text-white'}`} title="Discuss with AI">
+                                  <MessageSquare size={16} />
                                 </button>
                               </div>
                            </div>
-                           <div className="space-y-3 sm:space-y-4">
-                             <p className="text-sm sm:text-[17px] font-bold text-white/90 leading-snug">{marker.description}</p>
-                             <div className="bg-[#FDBB00]/5 p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border-l-4 border-[#FDBB00] flex items-start gap-3 sm:gap-4 shadow-inner">
-                                <Zap size={18} className="text-[#FDBB00] shrink-0 mt-1" />
-                                <div className="space-y-1"><p className="text-[9px] sm:text-[11px] font-black uppercase text-[#FDBB00] tracking-[0.2em]">Fix Recommendation</p><p className="text-[13px] sm:text-[15px] font-black text-white leading-relaxed">{marker.actionable_fix}</p></div>
+                           <div className="space-y-3">
+                             <p className="text-sm font-semibold text-zinc-200 leading-snug">{marker.description}</p>
+                             <div className="bg-zinc-950/50 p-4 rounded-xl border-l-2 border-[#FDBB00] flex items-start gap-3 shadow-inner">
+                                <Zap size={14} className="text-[#FDBB00] shrink-0 mt-0.5" />
+                                <div className="space-y-0.5"><p className="text-[9px] font-bold uppercase text-[#FDBB00] tracking-widest">Fix Recommendation</p><p className="text-xs font-medium text-zinc-400 leading-relaxed">{marker.actionable_fix}</p></div>
                              </div>
                            </div>
 
@@ -877,134 +881,136 @@ const App: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="max-w-[1200px] mx-auto space-y-10 sm:space-y-16 animate-in fade-in slide-in-from-bottom-12 duration-1000 py-6 sm:py-10">
+            <div className="max-w-[1200px] mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 py-12">
                
-               <div className="text-center space-y-4 sm:space-y-8">
-                 <h2 className="text-4xl sm:text-6xl lg:text-[100px] font-black italic tracking-tighter uppercase leading-[0.8] tracking-[-0.04em]"><span className="text-[#FDBB00]">Video</span><br/>Review Engine</h2>
-                 <p className="text-[10px] sm:text-[14px] lg:text-[16px] font-black text-white/20 uppercase tracking-[0.4em] sm:tracking-[0.8em]">Technical Content Audit Protocol</p>
+               <div className="text-center space-y-6">
+                 <h2 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight uppercase leading-[0.9]"><span className="text-[#FDBB00]">Video</span><br/>Review Engine</h2>
+                 <p className="text-xs sm:text-sm font-bold text-zinc-600 uppercase tracking-[0.6em]">Technical Content Audit Protocol</p>
                </div>
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12">
-                <div className="lg:col-span-8 space-y-6 sm:space-y-8">
+
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div className="lg:col-span-8 space-y-8">
                     <div 
-                      className={`bg-[#0f0f0f] border-2 border-dashed rounded-3xl sm:rounded-[5rem] p-10 sm:p-20 lg:p-36 text-center cursor-pointer group shadow-3xl relative overflow-hidden transition-all duration-700 ${mainFile ? 'border-green-500/40 bg-green-500/5' : isDragging ? 'border-[#FDBB00] bg-[#FDBB00]/[0.05]' : 'border-white/5 hover:border-[#FDBB00] hover:bg-[#FDBB00]/[0.02]'}`} 
+                      className={`bg-zinc-900/40 border-2 border-dashed rounded-[3rem] p-12 sm:p-24 text-center cursor-pointer group shadow-2xl relative overflow-hidden transition-all duration-500 ${mainFile ? 'border-green-500/40 bg-green-500/5' : isDragging ? 'border-[#FDBB00] bg-[#FDBB00]/5' : 'border-white/5 hover:border-[#FDBB00]/40 hover:bg-zinc-800/40'}`} 
                       onClick={() => document.getElementById('main-input')?.click()}
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
                     >
                       <input id="main-input" type="file" className="hidden" accept="video/*" onChange={e => e.target.files?.[0] && setMainFile(e.target.files[0])} />
-                      <div className="w-20 h-20 sm:w-32 sm:h-32 bg-white/5 rounded-2xl sm:rounded-[3rem] flex items-center justify-center mx-auto mb-6 sm:mb-12 group-hover:scale-110 transition-all shadow-3xl border border-white/5 shadow-[0_0_50px_rgba(253,187,0,0.05)]">{mainFile ? <CheckCircle2 className="text-green-500" size={40} /> : <Upload className="text-[#FDBB00]" size={40} />}</div>
-                      <h4 className="text-2xl sm:text-5xl font-black mb-4 sm:mb-6 tracking-tighter">{mainFile ? mainFile.name : 'Staging Asset for Review'}</h4>
-                      <p className="text-[12px] sm:text-[16px] font-bold text-white/20 uppercase tracking-[0.2em] sm:tracking-[0.4em]">{isDragging ? 'Drop to Upload' : 'Optimized for UHD Playback Containers'}</p>
+                      <div className="w-24 h-24 bg-zinc-800 rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform shadow-xl border border-white/5">
+                        {mainFile ? <CheckCircle2 className="text-green-500" size={32} /> : <Upload className="text-[#FDBB00]" size={32} />}
+                      </div>
+                      <h4 className="text-2xl sm:text-4xl font-bold mb-4 tracking-tight">{mainFile ? mainFile.name : 'Staging Asset for Review'}</h4>
+                      <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{isDragging ? 'Drop to Upload' : 'Optimized for UHD Playback Containers'}</p>
                     </div>
                   </div>
-                 <div className="lg:col-span-4 space-y-6 sm:space-y-8">
-                   <div className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[4rem] p-6 sm:p-12 space-y-8 sm:space-y-12 shadow-3xl border-t-white/10">
-                      <div className="space-y-4 sm:space-y-6"><p className="text-[10px] sm:text-[12px] font-black text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.4em]">Review Context</p><div className="space-y-2 sm:space-y-3">{(['Social Media', 'Ad / Commercial', 'Educational', 'Entertainment'] as VideoType[]).map(t => (<button key={t} onClick={() => setSelectedType(t)} className={`w-full px-6 sm:px-8 py-4 sm:py-5 rounded-xl sm:rounded-2xl text-[12px] sm:text-[14px] font-black text-left flex items-center justify-between border transition-all ${selectedType === t ? 'bg-[#FDBB00] border-[#FDBB00] text-black shadow-3xl scale-[1.03]' : 'bg-white/[0.02] border-white/5 text-white/40 hover:border-white/20 hover:text-white'}`}>{t} {selectedType === t && <CheckCircle2 size={18} strokeWidth={3} />}</button>))}</div></div>
-                      <div className="space-y-4 sm:space-y-6"><p className="text-[10px] sm:text-[12px] font-black text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.4em]">Assigned Auditor</p><div className="grid grid-cols-2 gap-2 sm:gap-3">{TEAM_MEMBERS.map(m => (<button key={m} onClick={() => setSelectedAuditor(m)} className={`px-4 sm:px-6 py-4 sm:py-5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] font-black border transition-all ${selectedAuditor === m ? 'bg-white/10 border-white/30 text-white shadow-2xl scale-[1.05]' : 'bg-transparent border-white/5 text-white/30 hover:border-white/10 hover:text-white'}`}>{m}</button>))}</div></div>
-                   </div>
-                   <button disabled={!mainFile || isAnalyzing} onClick={runAnalysis} className="w-full py-8 sm:py-14 bg-gradient-to-tr from-[#FDBB00] to-orange-500 text-black font-black text-xl sm:text-3xl rounded-3xl sm:rounded-[4rem] uppercase tracking-[0.3em] sm:tracking-[0.5em] shadow-[0_40px_80px_-20px_rgba(253,187,0,0.4)] hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-20 disabled:grayscale group relative overflow-hidden"><span className="relative z-10 group-hover:tracking-[0.7em] transition-all duration-700">{isAnalyzing ? 'Analyzing...' : 'Initiate Review'}</span><div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-700" /></button>
+                 <div className="lg:col-span-4 space-y-8">
+                    <div className="bg-zinc-900/40 border border-white/5 p-8 rounded-[3rem] space-y-8 shadow-xl">
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block">Audit Configuration</label>
+                        <div className="grid grid-cols-1 gap-3">
+                          {['Ad / Commercial', 'Organic / Social', 'Educational', 'Entertainment'].map((type) => (
+                            <button 
+                              key={type}
+                              onClick={() => setSelectedType(type as VideoType)}
+                              className={`px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest border transition-all text-left flex items-center justify-between group ${selectedType === type ? 'bg-[#FDBB00] border-[#FDBB00] text-black shadow-lg' : 'bg-zinc-800/50 border-white/5 text-zinc-500 hover:border-white/10 hover:text-zinc-300'}`}
+                            >
+                              {type}
+                              <ChevronRight size={14} className={selectedType === type ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 transition-opacity'} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block">Active Auditor</label>
+                        <select 
+                          value={selectedAuditor} 
+                          onChange={(e) => setSelectedAuditor(e.target.value)}
+                          className="w-full bg-zinc-800/50 border border-white/5 rounded-2xl px-6 py-4 text-xs font-bold uppercase tracking-widest text-zinc-300 outline-none focus:border-[#FDBB00]/50 transition-all appearance-none cursor-pointer"
+                        >
+                          {TEAM_MEMBERS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                      </div>
+
+                      <button 
+                        onClick={runAnalysis}
+                        disabled={!mainFile || isAnalyzing}
+                        className="w-full py-6 bg-[#FDBB00] text-black rounded-[2rem] font-black uppercase tracking-widest text-sm shadow-2xl hover:bg-[#ffc933] disabled:opacity-30 disabled:hover:bg-[#FDBB00] transition-all flex items-center justify-center gap-3"
+                      >
+                        <Zap size={18} strokeWidth={3} /> Initiate Audit
+                      </button>
+                    </div>
+
+                    <div className="pt-4">
+                      <LiveActivityFeed activities={liveActivities} />
+                    </div>
                  </div>
-               </div>
-               <div className="pt-20 border-t border-white/5">
-                 <LiveActivityFeed activities={liveActivities} />
                </div>
             </div>
           )
         )}
 
         {activeTab === 'guidelines' && (
-          <div className="max-w-[1400px] mx-auto space-y-12 sm:space-y-20 animate-in fade-in slide-in-from-bottom-10 py-6 sm:py-10">
-            <div className="text-center space-y-4 sm:space-y-6">
-              <h3 className="text-4xl sm:text-6xl lg:text-8xl font-black italic tracking-tighter uppercase leading-none">Quality <span className="text-[#FDBB00]">Benchmarks</span></h3>
-              <p className="text-[10px] sm:text-[14px] lg:text-[16px] font-black text-white/20 uppercase tracking-[0.4em] sm:tracking-[0.8em]">3DM Agency Video Review Protocol</p>
+          <div className="max-w-[1000px] mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 py-12">
+            <div className="space-y-2">
+              <h3 className="text-4xl font-black tracking-tight uppercase">Audit <span className="text-[#FDBB00]">Protocols</span></h3>
+              <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.4em]">Standardized Agency Quality Benchmarks</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10">
-              {/* Format Standards */}
-              <div className="lg:col-span-5 bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[4rem] p-6 sm:p-12 shadow-3xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6 sm:p-12 opacity-[0.02] rotate-12"><FileVideo className="size-24 sm:size-40" /></div>
-                <div className="space-y-6 sm:space-y-8 relative z-10">
-                  <div className="flex items-center gap-3 sm:gap-4 text-[#FDBB00]"><FileVideo size={24} className="sm:size-32" /><h4 className="text-xl sm:text-3xl font-black italic tracking-tighter uppercase">Format Standards</h4></div>
-                  <div className="space-y-2 sm:space-y-4">
-                    {[
-                      { label: 'Aspect Ratio', value: '9:16 Preferred' },
-                      { label: 'Resolution', value: '1080 × 1920 Minimum' },
-                      { label: 'Frame Rate', value: '24fps or 30fps' },
-                      { label: 'Codec', value: 'H.264 / H.265' },
-                      { label: 'Bitrate', value: '8–20 Mbps' },
-                      { label: 'Duration', value: '6–45 seconds' },
-                      { label: 'File Format', value: 'MP4' }
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between py-3 sm:py-4 border-b border-white/5 last:border-0">
-                        <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">{item.label}</span>
-                        <span className="text-[13px] sm:text-[15px] font-black text-white">{item.value}</span>
-                      </div>
-                    ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { title: 'Hook Performance', weight: '20%', icon: <Scissors />, color: 'text-[#FDBB00]', items: ['Strong 3s hook', 'No dead frames', 'Brand ID by 2s', 'Headline by 2s'] },
+                { title: 'Motion Graphics', weight: '20%', icon: <Target />, color: 'text-blue-400', items: ['Natural easing', 'Legible typography', 'Consistent transitions', 'Visual hierarchy'] },
+                { title: 'Visual & Technical', weight: '15%', icon: <ShieldAlert />, color: 'text-red-400', items: ['Resolution compliance', 'No artifacts', 'Consistent grading', 'Safe zones'] },
+                { title: 'Messaging & Copy', weight: '15%', icon: <ShieldCheck />, color: 'text-green-400', items: ['Benefit-led headlines', 'No spelling errors', 'Price accuracy', 'Location clarity'] },
+                { title: 'Audio & Captions', weight: '15%', icon: <Volume2 />, color: 'text-purple-400', items: ['Balanced VO/Music mix', 'No clipping', 'Tone matches positioning', 'Accurate captions'] },
+                { title: 'Platform Policy', weight: '15%', icon: <Gauge />, color: 'text-orange-400', items: ['No unverified claims', 'No discriminatory language', 'Text-to-image ratio', 'Regulatory disclaimers'] }
+              ].map((cat, idx) => (
+                <div key={idx} className="bg-zinc-900/40 border border-white/5 rounded-3xl p-8 space-y-6 hover:border-[#FDBB00]/20 transition-all group shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <div className={`p-3 bg-zinc-800 rounded-xl ${cat.color} group-hover:scale-110 transition-transform border border-white/5`}>{React.cloneElement(cat.icon as React.ReactElement, { size: 20 })}</div>
+                    <span className="text-xl font-black text-zinc-800 tracking-tighter">{cat.weight}</span>
+                  </div>
+                  <div className="space-y-4">
+                    <h5 className="text-lg font-bold uppercase tracking-tight group-hover:text-white transition-colors">{cat.title}</h5>
+                    <ul className="space-y-2">
+                      {cat.items.map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 text-xs text-zinc-500 font-medium">
+                          <div className="w-1 h-1 rounded-full bg-[#FDBB00]/40" /> {item}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-              </div>
-
-              {/* Quality Breakdown */}
-              <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                {[
-                  { title: 'Hook Performance', weight: '20%', icon: <Scissors />, color: 'text-[#FDBB00]', items: ['Strong 3s hook', 'No dead frames', 'Property ID by 2s', 'Headline by 2s', 'No logo-first'] },
-                  { title: 'Motion Graphics', weight: '20%', icon: <Target />, color: 'text-blue-400', items: ['Natural easing', 'Legible typography', 'Consistent transitions', 'Visual hierarchy', 'Hold durations'] },
-                  { title: 'Visual & Technical', weight: '15%', icon: <ShieldAlert />, color: 'text-red-400', items: ['Resolution compliance', 'No artifacts', 'Consistent grading', 'Safe zones', 'Correct codec'] },
-                  { title: 'Messaging & Copy', weight: '15%', icon: <ShieldCheck />, color: 'text-green-400', items: ['Benefit-led headlines', 'No spelling errors', 'Price accuracy', 'Location clarity', 'Single CTA'] },
-                  { title: 'Audio & Captions', weight: '15%', icon: <Volume2 />, color: 'text-purple-400', items: ['Balanced VO/Music mix', 'No clipping/distortion', 'Tone matches positioning', 'Accurate captions', 'Clean audio fades'] },
-                  { title: 'Platform Policy', weight: '15%', icon: <Gauge />, color: 'text-orange-400', items: ['No unverified ROI claims', 'No discriminatory language', 'Text-to-image ratio', 'Pacing by segment', 'Regulatory disclaimers'] }
-                ].map((cat, idx) => (
-                  <div key={idx} className="bg-[#0f0f0f] border border-white/5 rounded-3xl sm:rounded-[3.5rem] p-6 sm:p-10 space-y-4 sm:space-y-6 hover:border-white/10 transition-all group">
-                    <div className="flex items-center justify-between">
-                      <div className={`p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl ${cat.color} group-hover:scale-110 transition-transform`}>{React.cloneElement(cat.icon as React.ReactElement, { size: 20 })}</div>
-                      <span className="text-xl sm:text-2xl font-black italic text-white/20">{cat.weight}</span>
-                    </div>
-                    <div className="space-y-3 sm:space-y-4">
-                      <h5 className="text-lg sm:text-xl font-black uppercase tracking-tighter italic">{cat.title}</h5>
-                      <ul className="space-y-1.5 sm:space-y-2">
-                        {cat.items.map((item, i) => (
-                          <li key={i} className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-[13px] text-white/50 font-medium italic">
-                            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white/10" /> {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
 
-            {/* Unified Decision Protocol */}
-            <div className="bg-gradient-to-br from-[#0f0f0f] to-black border border-white/5 rounded-[5rem] p-16 shadow-3xl relative overflow-hidden space-y-16">
-               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FDBB00] to-transparent" />
-               
-               <div className="flex flex-col xl:flex-row justify-between gap-16">
-                  <div className="space-y-8 xl:w-1/3">
-                    <div className="space-y-4">
-                      <h4 className="text-5xl font-black italic tracking-tighter uppercase">Approval <span className="text-[#FDBB00]">Protocol</span></h4>
-                      <p className="text-[14px] font-black text-white/20 uppercase tracking-[0.4em]">Standardized Decision Logic</p>
+            <div className="bg-zinc-900/40 border border-white/5 rounded-[3rem] p-12 shadow-xl">
+               <div className="flex flex-col lg:flex-row justify-between gap-12">
+                  <div className="space-y-8 lg:w-1/2">
+                    <div className="space-y-2">
+                      <h4 className="text-3xl font-black tracking-tight uppercase">Decision <span className="text-[#FDBB00]">Logic</span></h4>
+                      <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.4em]">Weighted Scoring Protocol</p>
                     </div>
                     
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-4 text-[#FDBB00]"><Zap size={24} /><h5 className="text-xl font-black uppercase tracking-widest italic">Weighted Point System</h5></div>
-                      <div className="grid grid-cols-2 gap-4">
-                        {[
-                          { label: 'Critical', points: '10 pts', color: 'text-red-500' },
-                          { label: 'High', points: '5 pts', color: 'text-orange-500' },
-                          { label: 'Medium', points: '2 pts', color: 'text-yellow-500' },
-                          { label: 'Low', points: '1 pt', color: 'text-blue-500' }
-                        ].map((w, i) => (
-                          <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex justify-between items-center">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{w.label}</span>
-                            <span className={`${w.color} font-black text-sm`}>{w.points}</span>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      {[
+                        { label: 'Critical', points: '-10 pts', color: 'text-red-500' },
+                        { label: 'High', points: '-5 pts', color: 'text-orange-500' },
+                        { label: 'Medium', points: '-2 pts', color: 'text-yellow-500' },
+                        { label: 'Low', points: '-1 pt', color: 'text-blue-500' }
+                      ].map((w, i) => (
+                        <div key={i} className="bg-zinc-800/50 p-4 rounded-2xl border border-white/5 flex justify-between items-center group hover:border-white/10 transition-all">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{w.label}</span>
+                          <span className={`${w.color} font-black text-sm`}>{w.points}</span>
+                        </div>
+                      ))}
                     </div>
 
-                    <div className="space-y-4 pt-4">
-                      <div className="flex items-center gap-4 text-[#FDBB00]"><ShieldCheck size={24} /><h5 className="text-xl font-black uppercase tracking-widest italic">Priority Rules</h5></div>
+                    <div className="space-y-4">
+                      <h5 className="text-xs font-bold uppercase tracking-widest text-zinc-400">Approval Thresholds</h5>
                       <ul className="space-y-3">
                         {[
                           'ANY Critical failure = REJECTED',
@@ -1012,7 +1018,7 @@ const App: React.FC = () => {
                           'Score ≥ 65 + 0 Critical = NEEDS REVIEW',
                           'Score < 65 = REJECTED'
                         ].map((rule, i) => (
-                          <li key={i} className="flex items-center gap-3 text-[13px] font-black italic text-white/40">
+                          <li key={i} className="flex items-center gap-3 text-xs font-bold text-zinc-500">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#FDBB00]" /> {rule}
                           </li>
                         ))}
@@ -1020,20 +1026,18 @@ const App: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="xl:w-2/3 flex flex-wrap justify-center xl:justify-end gap-8 self-center">
+                  <div className="lg:w-1/2 flex flex-col gap-4">
                     {[
-                      { score: '85–100', status: 'Approved', action: 'Ready for Publishing', color: 'text-green-400', bg: 'bg-green-500/10', note: '0 Critical Failures' },
-                      { score: '65–84', status: 'Needs Review', action: 'Revision Recommended', color: 'text-[#FDBB00]', bg: 'bg-[#FDBB00]/10', note: '0 Critical Failures' },
-                      { score: 'Below 65', status: 'Rejected', action: 'Re-edit Required', color: 'text-red-400', bg: 'bg-red-500/10', note: 'Or Any Critical Failure' }
+                      { score: '85–100', status: 'Approved', action: 'Ready for Publishing', color: 'text-green-500', bg: 'bg-green-500/5', border: 'border-green-500/20' },
+                      { score: '65–84', status: 'Needs Review', action: 'Revision Recommended', color: 'text-[#FDBB00]', bg: 'bg-[#FDBB00]/5', border: 'border-[#FDBB00]/20' },
+                      { score: 'Below 65', status: 'Rejected', action: 'Re-edit Required', color: 'text-red-500', bg: 'bg-red-500/5', border: 'border-red-500/20' }
                     ].map((m, i) => (
-                      <div key={i} className={`${m.bg} border border-white/5 rounded-[4rem] p-12 text-center space-y-6 min-w-[280px] hover:scale-105 transition-all group relative overflow-hidden shadow-2xl`}>
-                        <div className="absolute top-0 right-0 p-6 opacity-[0.05] group-hover:opacity-10 transition-opacity"><ShieldCheck size={60} /></div>
-                        <div className="text-5xl font-black text-white tracking-tighter">{m.score}</div>
+                      <div key={i} className={`${m.bg} ${m.border} border rounded-3xl p-8 flex items-center justify-between group hover:scale-[1.02] transition-all shadow-lg`}>
                         <div className="space-y-1">
-                          <div className={`text-[14px] font-black uppercase tracking-[0.2em] ${m.color}`}>{m.status}</div>
-                          <div className="text-[13px] font-medium italic text-white/40">{m.action}</div>
+                          <div className={`text-sm font-black uppercase tracking-widest ${m.color}`}>{m.status}</div>
+                          <div className="text-xs font-medium text-zinc-500">{m.action}</div>
                         </div>
-                        <div className="pt-6 border-t border-white/5 text-[10px] font-black uppercase tracking-widest text-white/20">{m.note}</div>
+                        <div className="text-2xl font-black text-zinc-300 tracking-tighter">{m.score}</div>
                       </div>
                     ))}
                   </div>
@@ -1042,56 +1046,85 @@ const App: React.FC = () => {
           </div>
         )}
         {activeTab === 'feed' && (
-           <div className="max-w-[1400px] mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-10 py-10">
-              <div className="flex flex-col md:flex-row items-center justify-between border-b border-white/5 pb-12 gap-8">
-                <div className="space-y-3">
-                  <h3 className="text-7xl font-black italic tracking-tighter uppercase leading-none">Best <span className="text-[#FDBB00]">Practices</span></h3>
-                  <p className="text-[14px] font-black text-white/20 uppercase tracking-[0.5em]">Global Creative Standard Benchmarks</p>
+           <div className="max-w-[1200px] mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 py-12">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <h3 className="text-4xl font-black tracking-tight uppercase">Creative <span className="text-[#FDBB00]">Feed</span></h3>
+                  <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.4em]">Global Creative Standard Benchmarks</p>
                 </div>
-                <button onClick={() => setShowFeedForm(true)} className="px-10 py-5 bg-[#FDBB00] text-black rounded-3xl font-black uppercase tracking-widest text-[13px] flex items-center gap-3 shadow-3xl hover:scale-105 transition-all"><Plus size={20} strokeWidth={3} /> Stage New Benchmark</button>
+                <button 
+                  onClick={() => setShowFeedForm(true)} 
+                  className="px-8 py-4 bg-[#FDBB00] text-black rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center gap-3 shadow-lg hover:scale-105 transition-all"
+                >
+                  <Plus size={18} strokeWidth={3} /> Stage Benchmark
+                </button>
               </div>
 
               {showFeedForm && (
-                <div className="bg-[#0f0f0f] border border-[#FDBB00]/20 p-12 rounded-[4rem] shadow-3xl space-y-10 animate-in zoom-in duration-300 relative overflow-hidden">
-                   <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#FDBB00] to-transparent opacity-50" />
-                   <div className="flex items-center justify-between"><h4 className="text-3xl font-black italic tracking-tighter uppercase">Agency <span className="text-[#FDBB00]">Creative Feed</span></h4><button onClick={() => setShowFeedForm(false)} className="text-white/20 hover:text-white p-2 hover:bg-white/5 rounded-full transition-all"><X size={32} /></button></div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="space-y-3"><label className="text-[11px] font-black uppercase tracking-widest text-white/30">Creative Title</label><input type="text" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00] transition-all" value={newFeedItem.title} onChange={e => setNewFeedItem({...newFeedItem, title: e.target.value})} placeholder="Ex: Optimized Pacing Hook" /></div>
-                     <div className="space-y-3"><label className="text-[11px] font-black uppercase tracking-widest text-white/30">Asset Location URL</label><input type="text" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00] transition-all" value={newFeedItem.url} onChange={e => setNewFeedItem({...newFeedItem, url: e.target.value})} placeholder="Internal or External link" /></div>
-                     <div className="space-y-3"><label className="text-[11px] font-black uppercase tracking-widest text-white/30">Benchmark Category</label><select className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00] transition-all" value={newFeedItem.category} onChange={e => setNewFeedItem({...newFeedItem, category: e.target.value})}><option>Gold Standard</option><option>High Conversion</option><option>Best Hook</option><option>Technical Peak</option></select></div>
-                     <div className="space-y-3"><label className="text-[11px] font-black uppercase tracking-widest text-white/30">Technical Tags</label><input type="text" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00] transition-all" value={newFeedItem.tags} onChange={e => setNewFeedItem({...newFeedItem, tags: e.target.value})} placeholder="Separate with commas" /></div>
-                     <div className="md:col-span-2 space-y-3"><label className="text-[11px] font-black uppercase tracking-widest text-white/30">Technical Rationale</label><textarea className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00] min-h-[100px] transition-all" value={newFeedItem.description} onChange={e => setNewFeedItem({...newFeedItem, description: e.target.value})} placeholder="Why is this asset technically efficient?" /></div>
+                <div className="bg-zinc-900/40 border border-white/5 p-10 rounded-[3rem] shadow-xl space-y-8 animate-in zoom-in duration-300">
+                   <div className="flex items-center justify-between">
+                     <h4 className="text-2xl font-black tracking-tight uppercase">New <span className="text-[#FDBB00]">Benchmark</span></h4>
+                     <button onClick={() => setShowFeedForm(false)} className="text-zinc-600 hover:text-zinc-300 transition-colors"><X size={24} /></button>
                    </div>
-                   <button onClick={addFeedItem} className="w-full py-6 bg-gradient-to-tr from-[#FDBB00] to-orange-500 text-black font-black uppercase tracking-widest rounded-3xl shadow-3xl shadow-yellow-500/10 hover:scale-[1.01] transition-all">Broadcast Technical Inspo</button>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-2">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Creative Title</label>
+                       <input type="text" className="w-full bg-zinc-800/50 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00]/50 transition-all text-sm" value={newFeedItem.title} onChange={e => setNewFeedItem({...newFeedItem, title: e.target.value})} placeholder="Ex: Optimized Pacing Hook" />
+                     </div>
+                     <div className="space-y-2">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Asset URL</label>
+                       <input type="text" className="w-full bg-zinc-800/50 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00]/50 transition-all text-sm" value={newFeedItem.url} onChange={e => setNewFeedItem({...newFeedItem, url: e.target.value})} placeholder="Link to asset" />
+                     </div>
+                     <div className="space-y-2">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Category</label>
+                       <select className="w-full bg-zinc-800/50 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00]/50 transition-all text-sm appearance-none cursor-pointer" value={newFeedItem.category} onChange={e => setNewFeedItem({...newFeedItem, category: e.target.value})}>
+                         <option>Gold Standard</option>
+                         <option>High Conversion</option>
+                         <option>Best Hook</option>
+                         <option>Technical Peak</option>
+                       </select>
+                     </div>
+                     <div className="space-y-2">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Tags</label>
+                       <input type="text" className="w-full bg-zinc-800/50 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00]/50 transition-all text-sm" value={newFeedItem.tags} onChange={e => setNewFeedItem({...newFeedItem, tags: e.target.value})} placeholder="Hook, Pacing, Lighting" />
+                     </div>
+                     <div className="md:col-span-2 space-y-2">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Rationale</label>
+                       <textarea className="w-full bg-zinc-800/50 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00]/50 min-h-[100px] transition-all text-sm" value={newFeedItem.description} onChange={e => setNewFeedItem({...newFeedItem, description: e.target.value})} placeholder="Why is this asset a benchmark?" />
+                     </div>
+                   </div>
+                   <button onClick={addFeedItem} className="w-full py-5 bg-[#FDBB00] text-black font-black uppercase tracking-widest rounded-2xl shadow-lg hover:bg-[#ffc933] transition-all">Broadcast Benchmark</button>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {feedItems.length > 0 ? feedItems.map(item => (
-                  <div key={item.id} className="bg-[#0f0f0f] border border-white/5 rounded-[3.5rem] overflow-hidden group hover:border-[#FDBB00]/40 transition-all shadow-3xl hover:translate-y-[-8px]">
-                     <div className="aspect-video bg-[#0a0a0a] relative flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-[#FDBB00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <PlayCircle size={64} className="text-white/5 group-hover:text-[#FDBB00] group-hover:scale-110 transition-all duration-700" />
-                        <div className="absolute top-6 right-6 px-4 py-2 bg-black/80 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 text-[#FDBB00] shadow-glow">{item.category}</div>
+                  <div key={item.id} className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] overflow-hidden group hover:border-[#FDBB00]/20 transition-all shadow-lg flex flex-col">
+                     <div className="aspect-video bg-zinc-800 relative flex items-center justify-center overflow-hidden border-b border-white/5">
+                        <PlayCircle size={48} className="text-zinc-700 group-hover:text-[#FDBB00] group-hover:scale-110 transition-all duration-500" />
+                        <div className="absolute top-4 right-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-lg text-[9px] font-bold uppercase tracking-widest border border-white/5 text-[#FDBB00]">{item.category}</div>
                      </div>
-                     <div className="p-10 space-y-6">
-                        <div className="space-y-2">
-                           <h4 className="text-2xl font-black italic tracking-tighter group-hover:text-[#FDBB00] transition-colors">{item.title}</h4>
-                           <p className="text-white/40 text-[14px] leading-relaxed line-clamp-3 italic">"{item.description}"</p>
+                     <div className="p-8 space-y-6 flex-1 flex flex-col">
+                        <div className="space-y-2 flex-1">
+                           <h4 className="text-xl font-bold tracking-tight group-hover:text-[#FDBB00] transition-colors">{item.title}</h4>
+                           <p className="text-zinc-500 text-xs leading-relaxed line-clamp-3 italic">"{item.description}"</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                           {item.tags.map(tag => <span key={tag} className="px-3 py-1.5 bg-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white/30 border border-white/5 group-hover:border-[#FDBB00]/20 transition-all">#{tag}</span>)}
+                           {item.tags.map(tag => <span key={tag} className="px-2 py-1 bg-zinc-800 rounded-md text-[9px] font-bold uppercase tracking-widest text-zinc-500 border border-white/5">#{tag}</span>)}
                         </div>
                         <div className="pt-6 border-t border-white/5 flex items-center justify-between">
-                           <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#FDBB00]/10 border border-[#FDBB00]/20 flex items-center justify-center text-[#FDBB00] text-[10px] font-black shadow-glow">{item.addedBy[0]}</div><p className="text-[11px] font-black text-white/40 uppercase tracking-widest">{item.addedBy}</p></div>
-                           {item.url && <a href={item.url} target="_blank" className="p-3 bg-white/5 hover:bg-[#FDBB00] hover:text-black rounded-xl transition-all shadow-xl"><ExternalLink size={18} /></a>}
+                           <div className="flex items-center gap-3">
+                             <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 text-[10px] font-bold border border-white/5">{item.addedBy[0]}</div>
+                             <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{item.addedBy}</p>
+                           </div>
+                           {item.url && <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-2 bg-zinc-800 hover:bg-[#FDBB00] hover:text-black rounded-lg transition-all border border-white/5"><ExternalLink size={16} /></a>}
                         </div>
                      </div>
                   </div>
                 )) : (
-                  <div className="lg:col-span-3 py-44 text-center opacity-10 flex flex-col items-center select-none">
-                    <Sparkles size={120} strokeWidth={0.5} className="mb-8 animate-pulse" />
-                    <p className="text-4xl font-black uppercase tracking-[0.6em]">No staged benchmarks</p>
+                  <div className="lg:col-span-3 py-32 text-center opacity-20 flex flex-col items-center">
+                    <Sparkles size={64} className="mb-6 animate-pulse" />
+                    <p className="text-2xl font-black uppercase tracking-[0.4em]">Feed core empty</p>
                   </div>
                 )}
               </div>
@@ -1099,29 +1132,29 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'feedback' && (
-           <div className="max-w-4xl mx-auto space-y-10 sm:space-y-16 animate-in fade-in slide-in-from-bottom-10 py-6 sm:py-10">
-              <div className="text-center space-y-4 sm:space-y-6">
-                 <h3 className="text-4xl sm:text-7xl font-black italic tracking-tighter uppercase leading-none">System <span className="text-[#FDBB00]">Evolution</span></h3>
-                 <p className="text-[10px] sm:text-[14px] font-black text-white/20 uppercase tracking-[0.3em] sm:tracking-[0.5em]">Refining the Review Engine Algorithm</p>
+           <div className="max-w-[800px] mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 py-12">
+              <div className="space-y-2 text-center">
+                 <h3 className="text-4xl font-black tracking-tight uppercase">System <span className="text-[#FDBB00]">Evolution</span></h3>
+                 <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.4em]">Refining the Review Engine Algorithm</p>
               </div>
 
-              <div className="bg-[#0f0f0f] border border-white/5 p-6 sm:p-12 rounded-3xl sm:rounded-[4rem] shadow-3xl space-y-8 sm:space-y-12 border-t-white/5">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10">
+              <div className="bg-zinc-900/40 border border-white/5 p-10 rounded-[3rem] shadow-xl space-y-10">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-4">
-                      <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">User Sentiment</p>
-                      <div className="flex gap-2 sm:gap-4">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">User Sentiment</p>
+                      <div className="flex gap-3">
                         {[1, 2, 3, 4, 5].map(s => (
-                          <button key={s} onClick={() => setFeedbackRating(s)} className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all ${feedbackRating >= s ? 'bg-[#FDBB00] text-black shadow-[0_0_30px_rgba(253,187,0,0.3)]' : 'bg-white/5 text-white/20 hover:bg-white/10'}`}>
-                            <Star size={20} className="sm:size-24" fill={feedbackRating >= s ? "currentColor" : "none"} strokeWidth={2.5} />
+                          <button key={s} onClick={() => setFeedbackRating(s)} className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all border ${feedbackRating >= s ? 'bg-[#FDBB00] border-[#FDBB00] text-black shadow-lg' : 'bg-zinc-800 border-white/5 text-zinc-600 hover:bg-zinc-700 hover:border-white/10'}`}>
+                            <Star size={20} fill={feedbackRating >= s ? "currentColor" : "none"} strokeWidth={2.5} />
                           </button>
                         ))}
                       </div>
                    </div>
                    <div className="space-y-4">
-                      <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">Update Category</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Update Category</p>
                       <div className="flex flex-wrap gap-2">
                         {['Improvement', 'Bug', 'Feature', 'Other'].map(t => (
-                          <button key={t} onClick={() => setFeedbackType(t as any)} className={`px-4 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${feedbackType === t ? 'bg-white/10 border-white/40 text-white shadow-xl' : 'bg-white/5 border-transparent text-white/20 hover:text-white/40'}`}>
+                          <button key={t} onClick={() => setFeedbackType(t as any)} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border ${feedbackType === t ? 'bg-zinc-800 border-white/20 text-white shadow-lg' : 'bg-zinc-800/50 border-white/5 text-zinc-600 hover:text-zinc-400 hover:border-white/10'}`}>
                             {t}
                           </button>
                         ))}
@@ -1129,129 +1162,137 @@ const App: React.FC = () => {
                    </div>
                  </div>
                  <div className="space-y-4">
-                   <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/30">Protocol Suggestion / Field Report</p>
-                   <textarea value={feedbackMsg} onChange={e => setFeedbackMsg(e.target.value)} placeholder="What can we refine in the Video Review Engine?" className="w-full bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl px-6 sm:px-8 py-4 sm:py-6 outline-none focus:border-[#FDBB00] min-h-[120px] sm:min-h-[160px] text-base sm:text-lg italic transition-all" />
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Protocol Suggestion</p>
+                   <textarea value={feedbackMsg} onChange={e => setFeedbackMsg(e.target.value)} placeholder="What can we refine in the Video Review Engine?" className="w-full bg-zinc-800/50 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-[#FDBB00]/50 min-h-[120px] text-sm italic transition-all shadow-inner" />
                  </div>
-                 <button onClick={submitFeedback} className="w-full py-6 sm:py-8 bg-gradient-to-tr from-[#FDBB00] to-orange-500 text-black font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] rounded-2xl sm:rounded-[2.5rem] shadow-[0_20px_60px_-10px_rgba(253,187,0,0.4)] hover:scale-[1.02] transition-all text-sm sm:text-base">Submit Protocol Suggestion</button>
+                 <button onClick={submitFeedback} className="w-full py-5 bg-[#FDBB00] text-black font-black uppercase tracking-widest rounded-2xl shadow-lg hover:bg-[#ffc933] transition-all flex items-center justify-center gap-3">
+                   <Sparkles size={18} strokeWidth={3} /> Submit Suggestion
+                 </button>
               </div>
 
-              <div className="space-y-6 sm:space-y-8">
-                 <h4 className="text-xl sm:text-2xl font-black italic tracking-tighter uppercase opacity-30">Agency Development Log</h4>
-                 <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-6">
+                 <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-600">Agency Development Log</h4>
+                 <div className="space-y-4">
                     {feedbacks.length > 0 ? feedbacks.slice(0, 5).map(fb => (
-                      <div key={fb.id} className="bg-white/[0.02] border border-white/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] flex items-start gap-4 sm:gap-6 hover:bg-white/[0.04] transition-all group">
-                         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center shrink-0 border border-white/5 group-hover:border-[#FDBB00]/30 transition-all">
-                            {fb.type === 'Bug' ? <AlertTriangle className="text-red-400 size-5 sm:size-6" /> : <Sparkles className="text-[#FDBB00] size-5 sm:size-6" />}
+                      <div key={fb.id} className="bg-zinc-900/40 border border-white/5 p-6 rounded-2xl flex items-start gap-5 hover:bg-zinc-800/40 transition-all group shadow-sm">
+                         <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 border border-white/5 group-hover:border-[#FDBB00]/20 transition-all">
+                            {fb.type === 'Bug' ? <AlertTriangle className="text-red-400" size={18} /> : <Sparkles className="text-[#FDBB00]" size={18} />}
                          </div>
-                         <div className="space-y-1 sm:space-y-2">
-                            <div className="flex items-center gap-3 sm:gap-4">
-                               <p className="text-[11px] sm:text-[13px] font-black text-[#FDBB00] uppercase tracking-widest">{fb.user}</p>
-                               <span className="text-white/10 text-[8px] sm:text-[10px] uppercase font-black tracking-widest">{new Date(fb.date).toLocaleDateString()}</span>
+                         <div className="space-y-1 flex-1">
+                            <div className="flex items-center justify-between">
+                               <p className="text-xs font-bold text-zinc-300 uppercase tracking-widest">{fb.user}</p>
+                               <span className="text-zinc-700 text-[9px] uppercase font-bold">{new Date(fb.date).toLocaleDateString()}</span>
                             </div>
-                            <p className="text-sm sm:text-base text-white/70 italic leading-relaxed">"{fb.message}"</p>
+                            <p className="text-sm text-zinc-500 italic leading-relaxed">"{fb.message}"</p>
                          </div>
                       </div>
-                    )) : <p className="text-center text-white/10 py-10 uppercase tracking-[0.6em] font-black text-xs sm:text-sm italic">Log core empty</p>}
+                    )) : <p className="text-center text-zinc-800 py-10 uppercase tracking-widest font-bold text-xs italic">Log core empty</p>}
                  </div>
               </div>
            </div>
         )}
 
         {activeTab === 'archive' && (
-           <div className="max-w-6xl mx-auto space-y-10 sm:space-y-12 animate-in fade-in slide-in-from-bottom-10 py-6 sm:py-10">
-              <div className="flex flex-col md:flex-row items-center justify-between border-b border-white/5 pb-8 sm:pb-12 gap-6 sm:gap-8">
-                <div className="space-y-2 sm:space-y-3 text-center md:text-left">
-                  <h3 className="text-4xl sm:text-7xl font-black italic tracking-tighter uppercase leading-none">Session <span className="text-[#FDBB00]">Vault</span></h3>
-                  <p className="text-[10px] sm:text-[14px] font-black text-white/20 uppercase tracking-[0.3em] sm:tracking-[0.5em]">Permanent Agency Review Archives</p>
+           <div className="max-w-[1000px] mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 py-12">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <h3 className="text-4xl font-black tracking-tight uppercase">Session <span className="text-[#FDBB00]">Vault</span></h3>
+                  <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.4em]">Permanent Agency Review Archives</p>
                 </div>
-                <div className="flex items-center gap-4 sm:gap-8">
-                  <span className="text-[12px] sm:text-[16px] font-black text-white/30 uppercase tracking-widest bg-white/5 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl sm:rounded-3xl border border-white/5 shadow-inner">{history.length} SESSIONS</span>
-                  {history.length > 0 && <button onClick={clearHistory} className="p-4 sm:p-6 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-2xl sm:rounded-[2rem] transition-all border border-red-500/20 shadow-3xl group"><Trash2 size={24} className="sm:size-28 group-hover:scale-110 transition-transform" /></button>}
+                <div className="flex items-center gap-6">
+                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest bg-zinc-900/40 px-6 py-3 rounded-2xl border border-white/5">{history.length} SESSIONS</span>
+                  {history.length > 0 && <button onClick={clearHistory} className="p-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all border border-red-500/20 group"><Trash2 size={20} className="group-hover:scale-110 transition-transform" /></button>}
                 </div>
               </div>
               {history.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:gap-8">
+                <div className="grid grid-cols-1 gap-4">
                   {history.map(item => (
-                    <div key={item.id} className="bg-[#0f0f0f] border border-white/5 p-6 sm:p-12 rounded-3xl sm:rounded-[4rem] flex flex-col md:flex-row items-center justify-between hover:border-[#FDBB00]/40 transition-all group cursor-pointer shadow-3xl border-t-white/10 gap-6 sm:gap-8" onClick={() => loadFromHistory(item)}>
-                      <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-12 text-center sm:text-left">
-                        <div className="w-20 h-20 sm:w-28 sm:h-28 bg-white/5 rounded-2xl sm:rounded-[2.5rem] flex items-center justify-center text-white/10 group-hover:text-[#FDBB00] transition-all border border-white/5 shadow-inner duration-500">
-                          <FileVideo size={40} className="sm:size-56" strokeWidth={1} />
+                    <div key={item.id} className="bg-zinc-900/40 border border-white/5 p-8 rounded-3xl flex items-center justify-between hover:border-[#FDBB00]/20 transition-all group cursor-pointer shadow-lg" onClick={() => loadFromHistory(item)}>
+                      <div className="flex items-center gap-8">
+                        <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center text-zinc-600 group-hover:text-[#FDBB00] transition-all border border-white/5">
+                          <FileVideo size={24} strokeWidth={1.5} />
                         </div>
-                        <div className="space-y-2 sm:space-y-3">
-                          <h4 className="text-2xl sm:text-4xl font-black group-hover:text-white transition-colors tracking-tighter">{item.fileName}</h4>
-                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-12 text-[11px] sm:text-[14px] font-bold text-white/30 uppercase tracking-widest mt-1">
-                            <span className="flex items-center gap-2 sm:gap-3"><UserCheck size={16} className="sm:size-20 text-[#FDBB00] shadow-glow" /> {item.auditorName}</span>
-                            <span className="flex items-center gap-2 sm:gap-3"><Clock size={16} className="sm:size-20" /> {new Date(item.date).toLocaleDateString()}</span>
-                            <span className="px-3 sm:px-5 py-1 sm:py-2 bg-white/5 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black border border-white/5">{item.result.videoType}</span>
+                        <div className="space-y-1">
+                          <h4 className="text-xl font-bold group-hover:text-white transition-colors tracking-tight">{item.fileName}</h4>
+                          <div className="flex items-center gap-6 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                            <span className="flex items-center gap-2"><UserCheck size={14} className="text-[#FDBB00]" /> {item.auditorName}</span>
+                            <span className="flex items-center gap-2"><Clock size={14} /> {new Date(item.date).toLocaleDateString()}</span>
+                            <span className="px-2 py-1 bg-zinc-800 rounded-lg text-[9px] font-black border border-white/5">{item.result.videoType}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-8 sm:gap-16 w-full md:w-auto justify-between md:justify-end">
-                        <div className="text-right space-y-1 sm:space-y-2 shrink-0">
-                          <p className="text-[10px] sm:text-[14px] font-black text-white/20 uppercase tracking-widest">Master Score</p>
-                          <p className={`text-4xl sm:text-6xl font-black ${item.result.overallScore >= 75 ? 'text-green-500' : 'text-red-500'} tracking-tighter`}>{item.result.overallScore}%</p>
+                      <div className="flex items-center gap-12">
+                        <div className="text-right space-y-0.5">
+                          <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Master Score</p>
+                          <p className={`text-3xl font-black ${item.result.overallScore >= 75 ? 'text-green-500' : 'text-red-500'} tracking-tighter`}>{item.result.overallScore}%</p>
                         </div>
-                        <div className="p-6 sm:p-8 bg-white/5 rounded-2xl sm:rounded-[2.5rem] group-hover:bg-[#FDBB00] group-hover:text-black transition-all duration-500 shadow-3xl">
-                          <ChevronRight size={24} className="sm:size-40" strokeWidth={4} />
+                        <div className="p-4 bg-zinc-800 rounded-2xl group-hover:bg-[#FDBB00] group-hover:text-black transition-all duration-300">
+                          <ChevronRight size={20} strokeWidth={3} />
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : ( <div className="py-32 sm:py-64 text-center opacity-10 flex flex-col items-center select-none"><HistoryIcon size={100} strokeWidth={0.5} className="sm:size-160 mb-8 sm:mb-12 animate-pulse" /><p className="text-2xl sm:text-5xl font-black uppercase tracking-[0.4em] sm:tracking-[0.8em]">Vault core empty</p></div> )}
+              ) : ( 
+                <div className="py-32 text-center opacity-20 flex flex-col items-center">
+                  <HistoryIcon size={64} className="mb-6 animate-pulse" />
+                  <p className="text-2xl font-black uppercase tracking-[0.4em]">Vault core empty</p>
+                </div> 
+              )}
            </div>
         )}
 
         {activeTab === 'team' && (
-          <div className="max-w-6xl mx-auto space-y-10 sm:space-y-12 animate-in fade-in slide-in-from-bottom-10 py-6 sm:py-10">
-             <div className="flex flex-col md:flex-row items-center justify-between border-b border-white/5 pb-8 sm:pb-12 gap-6 sm:gap-8 text-center md:text-left">
-               <div className="space-y-2 sm:space-y-3">
-                 <h3 className="text-4xl sm:text-7xl font-black italic tracking-tighter uppercase leading-none">Team <span className="text-[#FDBB00]">Scores</span></h3>
-                 <p className="text-[10px] sm:text-[14px] font-black text-white/20 uppercase tracking-[0.3em] sm:tracking-[0.5em]">Global Operational KPI Metrics</p>
+          <div className="max-w-[1000px] mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 py-12">
+             <div className="flex items-center justify-between">
+               <div className="space-y-2">
+                 <h3 className="text-4xl font-black tracking-tight uppercase">Team <span className="text-[#FDBB00]">Scores</span></h3>
+                 <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.4em]">Global Operational KPI Metrics</p>
                </div>
-               <div className="flex items-center gap-6 sm:gap-8">
-                 <div className="text-right space-y-1">
-                   <p className="text-[10px] sm:text-[12px] font-black text-white/20 uppercase tracking-widest">Unified Performance</p>
-                   <p className="text-3xl sm:text-5xl font-black text-[#FDBB00] tracking-tighter leading-none shadow-glow">{history.length > 0 ? Math.round(history.reduce((a, b) => a + b.result.overallScore, 0) / history.length) : 0}%</p>
+               <div className="flex items-center gap-6">
+                 <div className="text-right">
+                   <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Unified Performance</p>
+                   <p className="text-3xl font-black text-[#FDBB00] tracking-tighter leading-none">{history.length > 0 ? Math.round(history.reduce((a, b) => a + b.result.overallScore, 0) / history.length) : 0}%</p>
                  </div>
-                 <BarChart3 className="text-[#FDBB00] shadow-glow size-12 sm:size-16" />
+                 <BarChart3 className="text-[#FDBB00]" size={32} />
                </div>
              </div>
-             <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-white/10 rounded-3xl sm:rounded-[4rem] p-6 sm:p-12 shadow-3xl relative group overflow-hidden border-t-white/10">
-                <div className="absolute top-0 right-0 p-6 sm:p-10 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity duration-700"><Database className="size-32 sm:size-48" /></div>
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 sm:gap-10 relative z-10">
-                   <div className="space-y-4 text-center md:text-left">
-                     <div className="flex items-center gap-3 text-[#FDBB00] justify-center md:justify-start">
-                       <Database size={20} className="sm:size-24 shadow-glow" />
-                       <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter">Agency Sync Hub</h3>
+
+             <div className="bg-zinc-900/40 border border-white/5 rounded-[3rem] p-10 shadow-xl space-y-8">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                   <div className="space-y-4">
+                     <div className="flex items-center gap-3 text-[#FDBB00]">
+                       <Database size={20} />
+                       <h3 className="text-lg font-bold uppercase tracking-tight">Agency Sync Hub</h3>
                      </div>
-                     <p className="text-white/40 max-w-md text-sm sm:text-[15px] leading-relaxed">Consolidate scoreboards from all systems. Export your local master vault or merge teammate data to build a truly global agency performance dashboard.</p>
+                     <p className="text-zinc-500 max-w-md text-xs leading-relaxed">Consolidate scoreboards from all systems. Export your local master vault or merge teammate data to build a truly global agency performance dashboard.</p>
                    </div>
-                   <div className="flex flex-wrap gap-3 sm:gap-4 justify-center">
-                      <button onClick={exportTeamData} className="px-6 sm:px-8 py-4 sm:py-5 bg-white/5 hover:bg-white/10 rounded-xl sm:rounded-2xl text-[10px] sm:text-[12px] font-black uppercase tracking-widest border border-white/10 flex items-center gap-2 sm:gap-3 shadow-xl transition-all"><DownloadCloud size={18} /> Master Export</button>
-                      <button onClick={() => importFileRef.current?.click()} className="px-6 sm:px-8 py-4 sm:py-5 bg-[#FDBB00] text-black rounded-xl sm:rounded-2xl hover:scale-105 shadow-3xl text-[10px] sm:text-[12px] font-black uppercase tracking-widest flex items-center gap-2 sm:gap-3 transition-all"><UploadCloud size={18} strokeWidth={3} /> Merge Records</button>
+                   <div className="flex gap-3">
+                      <button onClick={exportTeamData} className="px-6 py-4 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-[10px] font-bold uppercase tracking-widest border border-white/5 flex items-center gap-2 transition-all"><DownloadCloud size={16} /> Export</button>
+                      <button onClick={() => importFileRef.current?.click()} className="px-6 py-4 bg-[#FDBB00] text-black rounded-2xl hover:bg-[#ffc933] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all"><UploadCloud size={16} strokeWidth={3} /> Merge</button>
                       <input type="file" ref={importFileRef} className="hidden" accept=".json" onChange={importTeamData} />
                    </div>
                 </div>
              </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {teamStats.map(stat => (
-                   <div key={stat.name} className="bg-[#0f0f0f] border border-white/5 p-8 sm:p-14 rounded-[3rem] sm:rounded-[5rem] relative overflow-hidden group hover:border-[#FDBB00]/40 transition-all border-t-white/10 shadow-3xl">
-                      <div className="flex items-center justify-between mb-10 sm:mb-16 relative z-10">
-                        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl sm:rounded-[2rem] bg-white/5 flex items-center justify-center text-[#FDBB00] border border-white/5 group-hover:scale-110 shadow-2xl transition-all duration-700 shadow-glow">
-                          <UserCheck size={32} className="sm:size-48" />
+                   <div key={stat.name} className="bg-zinc-900/40 border border-white/5 p-10 rounded-[2.5rem] space-y-8 group hover:border-[#FDBB00]/20 transition-all shadow-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="w-16 h-16 rounded-2xl bg-zinc-800 flex items-center justify-center text-[#FDBB00] border border-white/5 group-hover:scale-110 transition-transform duration-500">
+                          <UserCheck size={28} />
                         </div>
                         <div className="text-right">
-                          <p className="text-[11px] sm:text-[14px] font-black text-white/20 uppercase tracking-widest mb-1">Rating</p>
-                          <p className="text-4xl sm:text-6xl font-black text-white group-hover:text-[#FDBB00] transition-colors tracking-tighter leading-none">{stat.avgScore}%</p>
+                          <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Rating</p>
+                          <p className="text-4xl font-black text-white group-hover:text-[#FDBB00] transition-colors tracking-tighter leading-none">{stat.avgScore}%</p>
                         </div>
                       </div>
-                      <div className="relative z-10 space-y-2 sm:space-y-3">
-                        <h4 className="text-3xl sm:text-5xl font-black text-white tracking-tighter">{stat.name}</h4>
-                        <p className="text-[13px] sm:text-[16px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">{stat.count} Audits Finalized</p>
+                      <div className="space-y-1">
+                        <h4 className="text-2xl font-bold tracking-tight">{stat.name}</h4>
+                        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{stat.count} Audits Finalized</p>
                       </div>
-                      <div className="mt-10 sm:mt-14 h-2 sm:h-3 w-full bg-white/5 rounded-full overflow-hidden relative z-10 shadow-inner">
-                        <div className="h-full bg-gradient-to-r from-[#FDBB00] to-orange-500 transition-all duration-1000 shadow-[0_0_20px_rgba(253,187,0,0.6)]" style={{ width: `${stat.avgScore}%` }} />
+                      <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#FDBB00] transition-all duration-1000" style={{ width: `${stat.avgScore}%` }} />
                       </div>
                    </div>
                 ))}
